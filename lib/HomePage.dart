@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:glowgenesis/CartProvider.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:glowgenesis/BottomCartStrip.dart';
 import 'package:glowgenesis/ProductCard.dart';
+
+class CartNotifier {
+  static final ValueNotifier<int> cartCount = ValueNotifier<int>(0);
+}
 
 class HomePage extends StatefulWidget {
   @override
@@ -14,7 +20,7 @@ class _HomePageState extends State<HomePage> {
 
   final List<Map<String, dynamic>> products = [
     {
-      "name": "Sunscreen Cream SPF 50 PA+++",
+      "name": "Sunscreen Cream SPF 50",
       "category": "UV Protection",
       "description":
           "Protects from harmful UV rays | Lightweight & Non-Greasy | Hydrates Skin",
@@ -44,7 +50,7 @@ class _HomePageState extends State<HomePage> {
       "image": "assets/antiacne.png",
     },
     {
-      "name": "Body Moisturizer - Cocoa Butter",
+      "name": "Body Moisturizer",
       "category": "Deep Nourishment",
       "description":
           "Intensely moisturizes | Smoothens rough skin | Long-lasting hydration",
@@ -89,77 +95,81 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        
         title: Image.asset('assets/logo.png', height: 30),
-        actions: [
-          Icon(Icons.person, color: Colors.black),
-          SizedBox(width: 10),
-          Icon(Icons.menu, color: Colors.black),
-        ],
+        actions: [Icon(Icons.menu, color: Colors.black), SizedBox(width: 14)],
       ),
       body: Stack(
         children: [
-          SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Search Bar
-                Padding(
-                  padding: const EdgeInsets.all(10.0),
-                  child: TextField(
-                    decoration: InputDecoration(
-                      hintText: 'Search',
-                      prefixIcon: Icon(Icons.search),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(30),
+          ValueListenableBuilder<int>(
+            valueListenable: cartCount,
+            builder: (context, count, child) {
+              // Calculate bottom padding dynamically based on BottomCartStrip visibility
+              double bottomPadding = count > 0 ? 50 : 0;
+
+              return SingleChildScrollView(
+                child: Padding(
+                  padding: EdgeInsets.only(bottom: bottomPadding),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Search Bar
+                      Padding(
+                        padding: const EdgeInsets.all(10.0),
+                        child: TextField(
+                          decoration: InputDecoration(
+                            hintText: 'Search',
+                            prefixIcon: Icon(Icons.search),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                            filled: true,
+                            fillColor: Colors.grey[200],
+                          ),
+                        ),
                       ),
-                      filled: true,
-                      fillColor: Colors.grey[200],
-                    ),
+                      // Banner
+                      Padding(
+                        padding: const EdgeInsets.all(10.0),
+                        child: LayoutBuilder(
+                          builder: (context, constraints) {
+                            double itemWidth = 160;
+                            int itemsPerRow =
+                                (constraints.maxWidth / itemWidth).floor();
+
+                            // Ensure at least one item per row
+                            itemsPerRow = itemsPerRow > 0 ? itemsPerRow : 1;
+
+                            double calculatedWidth = (constraints.maxWidth -
+                                    (10 * (itemsPerRow - 1))) /
+                                itemsPerRow;
+
+                            return Wrap(
+                              spacing: 10,
+                              runSpacing: 10,
+                              alignment: WrapAlignment.start,
+                              children: products.map((product) {
+                                return SizedBox(
+                                  width: calculatedWidth,
+                                  child: ProductCard(
+                                    name: product["name"],
+                                    category: product["category"],
+                                    description: product["description"],
+                                    rating: product["rating"],
+                                    reviews: product["reviews"],
+                                    price: product["price"],
+                                    imagePath: product["image"],
+                                  ),
+                                );
+                              }).toList(),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                // Banner
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(10),
-                    child: Image.asset(
-                      'assets/Offers/offers.jpg',
-                      height: 150,
-                      width: double.infinity,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                ),
-                // Product Grid
-                Padding(
-                  padding: const EdgeInsets.all(10.0),
-                  child: GridView.builder(
-                    shrinkWrap: true,
-                    physics: NeverScrollableScrollPhysics(),
-                    itemCount: products.length,
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      crossAxisSpacing: 10,
-                      mainAxisSpacing: 10,
-                      childAspectRatio: 0.515,
-                    ),
-                    itemBuilder: (context, index) {
-                      final product = products[index];
-                      return ProductCard(
-                        name: product["name"],
-                        category: product["category"],
-                        description: product["description"],
-                        rating: product["rating"],
-                        reviews: product["reviews"],
-                        price: product["price"],
-                        imagePath: product["image"],
-                      );
-                    },
-                  ),
-                ),
-              ],
-            ),
+              );
+            },
           ),
           Positioned(
             left: 0,

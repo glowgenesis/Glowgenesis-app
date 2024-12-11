@@ -4,7 +4,6 @@ import 'package:glowgenesis/HomePage.dart';
 import 'package:provider/provider.dart';
 import 'package:glowgenesis/cart_page.dart';
 import 'CartProvider.dart';
-import 'SearchPage.dart';
 import 'SavedPage.dart';
 import 'Account.dart';
 

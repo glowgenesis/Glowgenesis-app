@@ -13,43 +13,49 @@ class CartPage extends StatelessWidget {
 
     return SafeArea(
       child: Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.grey[100],
         appBar: AppBar(
           backgroundColor: Colors.white,
           elevation: 2,
-          leading: Row(
-            children: [
-              IconButton(
-                icon: Icon(Icons.arrow_back_ios, color: Colors.black),
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-              ),
-              Spacer(),
-              Text(
-                'My Cart',
-                style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            IconButton(
-              icon: Icon(Icons.menu, color: Colors.black),
-              onPressed: () {
-                // Add menu action here
-              },
+          centerTitle: true,
+          title: Text(
+            'My Cart',
+            style: TextStyle(
+              color: Colors.black,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
             ),
-          ],
+          ),
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back_ios, color: Colors.black),
+            onPressed: () => Navigator.pop(context),
+          ),
         ),
         body: cartItems.isEmpty
             ? Center(child: Text('Your cart is empty!'))
             : Column(
                 children: [
-                  // Cart Item List
+                  // Free Shipping Progress
+                  Container(
+                    padding: EdgeInsets.all(12),
+                    color: Colors.orange.shade50,
+                    child: Column(
+                      children: [
+                        Text(
+                          'You are ₹60.00 away from FREE shipping.',
+                          style: TextStyle(fontSize: 14),
+                        ),
+                        SizedBox(height: 8),
+                        LinearProgressIndicator(
+                          value: 0.7, // Example progress
+                          color: Colors.orange,
+                          backgroundColor: Colors.orange.shade100,
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // Cart Items
                   Expanded(
                     child: ListView.builder(
                       itemCount: cartItems.length,
@@ -57,118 +63,93 @@ class CartPage extends StatelessWidget {
                         final item = cartItems[index];
                         return Card(
                           margin: EdgeInsets.symmetric(
-                            horizontal:
-                                MediaQuery.of(context).size.width * 0.04,
-                            vertical: MediaQuery.of(context).size.height * 0.01,
+                            horizontal: 16,
+                            vertical: 8,
                           ),
                           child: Padding(
-                            padding: EdgeInsets.all(
-                              MediaQuery.of(context).size.width * 0.03,
-                            ),
-                            child: Row(
+                            padding: const EdgeInsets.all(12.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                // Product Image
-                                Container(
-                                  width:
-                                      MediaQuery.of(context).size.width * 0.15,
-                                  height:
-                                      MediaQuery.of(context).size.width * 0.15,
-                                  child: Image.network(
-                                    item['image'],
-                                    width: MediaQuery.of(context).size.width *
-                                        0.15,
-                                    height: MediaQuery.of(context).size.width *
-                                        0.15,
-                                    fit: BoxFit.cover,
-                                    loadingBuilder:
-                                        (context, child, loadingProgress) {
-                                      if (loadingProgress == null) {
-                                        return child;
-                                      } else {
-                                        return Center(
-                                          child: CircularProgressIndicator(
-                                            value: loadingProgress
-                                                        .expectedTotalBytes !=
-                                                    null
-                                                ? loadingProgress
-                                                        .cumulativeBytesLoaded /
-                                                    (loadingProgress
-                                                            .expectedTotalBytes ??
-                                                        1)
-                                                : null,
-                                          ),
-                                        );
-                                      }
-                                    },
-                                    errorBuilder: (context, error, stackTrace) {
-                                      return Icon(Icons.error, size: 50);
-                                    },
-                                  ),
-                                ),
-                                SizedBox(
-                                    width: MediaQuery.of(context).size.width *
-                                        0.03),
-                                // Product Name and Price
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        item['name'],
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: MediaQuery.of(context)
-                                                  .size
-                                                  .width *
-                                              0.045,
-                                        ),
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                      SizedBox(height: 4),
-                                      Text(
-                                        '₹${item['price'].toStringAsFixed(2)}',
-                                        style: TextStyle(
-                                          fontSize: MediaQuery.of(context)
-                                                  .size
-                                                  .width *
-                                              0.04,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                // Quantity Controls
                                 Row(
                                   children: [
-                                    IconButton(
-                                      icon: Icon(Icons.remove_circle_outline),
-                                      onPressed: () {
-                                        cartProvider.updateQuantity(index, -1);
-                                      },
-                                    ),
-                                    Text(
-                                      '${item['quantity']}',
-                                      style: TextStyle(
-                                        fontSize:
-                                            MediaQuery.of(context).size.width *
-                                                0.045,
+                                    // Product Image
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.circular(8),
+                                      child: Image.network(
+                                        item['image'],
+                                        width: 80,
+                                        height: 80,
+                                        fit: BoxFit.cover,
                                       ),
                                     ),
-                                    IconButton(
-                                      icon: Icon(Icons.add_circle_outline),
-                                      onPressed: () {
-                                        cartProvider.updateQuantity(index, 1);
-                                      },
+                                    SizedBox(width: 12),
+
+                                    // Product Details
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            item['name'],
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 16,
+                                            ),
+                                          ),
+                                          SizedBox(height: 4),
+                                          Text(
+                                            '₹${item['price'].toStringAsFixed(2)}',
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              color: Colors.grey,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+
+                                    // Quantity Controls
+                                    Column(
+                                      children: [
+                                        IconButton(
+                                          icon: Icon(Icons.add_circle,
+                                              color: Colors.green),
+                                          onPressed: () => cartProvider
+                                              .updateQuantity(index, 1),
+                                        ),
+                                        Text('${item['quantity']}',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 14,
+                                            )),
+                                        IconButton(
+                                          icon: Icon(Icons.remove_circle,
+                                              color: Colors.red),
+                                          onPressed: () => cartProvider
+                                              .updateQuantity(index, -1),
+                                        ),
+                                      ],
                                     ),
                                   ],
                                 ),
-                                // Delete Button
-                                IconButton(
-                                  icon: Icon(Icons.delete, color: Colors.red),
-                                  onPressed: () {
-                                    // cartProvider.removeFromCart(widget.name);
-                                  },
+                                SizedBox(height: 8),
+                                // Divider
+                                Divider(),
+                                Row(
+                                  children: [
+                                    Icon(Icons.timer,
+                                        color: Colors.orange, size: 16),
+                                    SizedBox(width: 8),
+                                    Text('Limited Time Deal: 1m 39s left',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.grey,
+                                        )),
+                                  ],
                                 ),
                               ],
                             ),
@@ -177,65 +158,58 @@ class CartPage extends StatelessWidget {
                       },
                     ),
                   ),
+
                   // Cart Summary and Checkout Button
                   Container(
-                    padding: EdgeInsets.all(
-                        MediaQuery.of(context).size.width * 0.05),
+                    padding: EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.grey[100],
+                      color: Colors.white,
                       borderRadius: BorderRadius.vertical(
                         top: Radius.circular(20),
                       ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black12,
+                          blurRadius: 10,
+                          offset: Offset(0, -2),
+                        ),
+                      ],
                     ),
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(
-                              'Sub-total',
-                              style: TextStyle(fontSize: 16),
-                            ),
-                            Text(
-                              '₹${subTotal.toStringAsFixed(2)}',
-                              style: TextStyle(fontSize: 16),
-                            ),
+                            Text('Subtotal', style: TextStyle(fontSize: 16)),
+                            Text('₹${subTotal.toStringAsFixed(2)}',
+                                style: TextStyle(fontSize: 16)),
                           ],
                         ),
                         SizedBox(height: 8),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(
-                              'Shipping fee',
-                              style: TextStyle(fontSize: 16),
-                            ),
-                            Text(
-                              '₹${shippingFee.toStringAsFixed(2)}',
-                              style: TextStyle(fontSize: 16),
-                            ),
+                            Text('Shipping Fee',
+                                style: TextStyle(fontSize: 16)),
+                            Text('₹${shippingFee.toStringAsFixed(2)}',
+                                style: TextStyle(fontSize: 16)),
                           ],
                         ),
                         Divider(height: 24, thickness: 1),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(
-                              'Total',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            Text(
-                              '₹${total.toStringAsFixed(2)}',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.green,
-                              ),
-                            ),
+                            Text('Total',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                )),
+                            Text('₹${total.toStringAsFixed(2)}',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.green,
+                                )),
                           ],
                         ),
                         SizedBox(height: 16),
@@ -243,13 +217,21 @@ class CartPage extends StatelessWidget {
                           onPressed: () {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                  content: Text('Proceeding to Checkout...')),
+                                content: Text('Proceeding to Checkout...'),
+                              ),
                             );
                           },
                           style: ElevatedButton.styleFrom(
-                            padding: EdgeInsets.symmetric(vertical: 16),
+                            padding: EdgeInsets.symmetric(vertical: 8),
+                            backgroundColor: Colors.orange,
                           ),
-                          child: Text('Go To Checkout'),
+                          child: Text(
+                            'Checkout',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
                         ),
                       ],
                     ),

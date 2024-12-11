@@ -8,9 +8,9 @@ class BottomCartStrip extends StatelessWidget {
     final cartProvider = Provider.of<CartProvider>(context);
 
     return ValueListenableBuilder<int>(
-      valueListenable: cartProvider.cartCount, // Listen to cartCount changes
+      valueListenable: cartProvider.cartCount,
       builder: (context, count, child) {
-        if (count == 0) return SizedBox.shrink(); // Hide if no items in cart
+        if (count == 0) return SizedBox.shrink(); // Hide when cart is empty
         return Container(
           color: Colors.blueAccent,
           padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
@@ -24,14 +24,13 @@ class BottomCartStrip extends StatelessWidget {
               ),
               ElevatedButton(
                 onPressed: () {
-                  // Navigate to Cart with custom animation
                   Navigator.pushNamed(context, '/cart');
                 },
                 child: Text(
                   "View Cart",
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
-              )
+              ),
             ],
           ),
         );

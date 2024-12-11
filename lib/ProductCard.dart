@@ -91,6 +91,7 @@ class _ProductCardState extends State<ProductCard> {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
+      // height: 300, // Set a fixed height for the card
       child: Card(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10),
@@ -115,7 +116,7 @@ class _ProductCardState extends State<ProductCard> {
                   Chip(
                     label: Text(
                       widget.category,
-                      style: TextStyle(fontSize: 10),
+                      style: TextStyle(fontSize: 8),
                     ),
                     backgroundColor: Colors.green.shade50,
                   ),
@@ -126,7 +127,7 @@ class _ProductCardState extends State<ProductCard> {
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      fontSize: 14,
+                      fontSize: 12,
                     ),
                   ),
                   SizedBox(height: 5),
@@ -150,7 +151,6 @@ class _ProductCardState extends State<ProductCard> {
                 ],
               ),
             ),
-            Spacer(),
             SizedBox(
               width: double.infinity,
               child: quantity == 0
