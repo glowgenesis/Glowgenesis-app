@@ -3,6 +3,8 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SearchPage extends StatefulWidget {
+  const SearchPage({super.key});
+
   @override
   _SearchPageState createState() => _SearchPageState();
 }
@@ -73,7 +75,7 @@ class _SearchPageState extends State<SearchPage> {
         foregroundColor: Colors.black,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () {
             Navigator.pop(context);
           },
@@ -81,7 +83,7 @@ class _SearchPageState extends State<SearchPage> {
         actions: [
           IconButton(
             onPressed: () {},
-            icon: Icon(FontAwesomeIcons.solidBell),
+            icon: const Icon(FontAwesomeIcons.solidBell),
           ),
         ],
       ),
@@ -93,7 +95,7 @@ class _SearchPageState extends State<SearchPage> {
             TextField(
               controller: searchController,
               decoration: InputDecoration(
-                prefixIcon: Icon(FontAwesomeIcons.search),
+                prefixIcon: const Icon(FontAwesomeIcons.search),
                 hintText: 'Search for products...',
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(screenWidth * 0.03),
@@ -136,7 +138,7 @@ class _SearchPageState extends State<SearchPage> {
                   return ListTile(
                     title: Text(recentSearches[index]),
                     trailing: IconButton(
-                      icon: Icon(Icons.clear),
+                      icon: const Icon(Icons.clear),
                       onPressed: () {
                         _removeSearch(index); // Remove specific search from the list
                       },

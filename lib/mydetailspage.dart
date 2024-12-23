@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 class MyDetailsPage extends StatefulWidget {
+  const MyDetailsPage({super.key});
+
   @override
   _MyDetailsPageState createState() => _MyDetailsPageState();
 }
@@ -17,16 +19,16 @@ class _MyDetailsPageState extends State<MyDetailsPage> {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () {
             Navigator.pop(context);
           },
         ),
-        title: Text('My Details'),
+        title: const Text('My Details'),
         centerTitle: true,
         actions: [
           IconButton(
-            icon: Icon(Icons.notifications),
+            icon: const Icon(Icons.notifications),
             onPressed: () {
               // Handle notifications
             },
@@ -39,16 +41,16 @@ class _MyDetailsPageState extends State<MyDetailsPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             buildTextField('Full Name', 'Enter your full name', _nameController),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             buildTextField(
                 'Email Address', 'Enter your email address', _emailController),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             buildTextField(
               'Date of Birth',
               'Select your date of birth',
               _dobController,
               isReadOnly: true,
-              suffixIcon: Icon(Icons.calendar_today),
+              suffixIcon: const Icon(Icons.calendar_today),
               onTap: () async {
                 DateTime? selectedDate = await showDatePicker(
                   context: context,
@@ -62,9 +64,9 @@ class _MyDetailsPageState extends State<MyDetailsPage> {
                 }
               },
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             DropdownButtonFormField<String>(
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: 'Gender',
                 border: OutlineInputBorder(),
               ),
@@ -81,20 +83,20 @@ class _MyDetailsPageState extends State<MyDetailsPage> {
                       ))
                   .toList(),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             buildTextField(
               'Phone Number',
               'Enter your phone number',
               _phoneController,
-              prefixIcon: Padding(
-                padding: const EdgeInsets.all(8.0),
+              prefixIcon: const Padding(
+                padding: EdgeInsets.all(8.0),
                 child: Text(
                   '🇮🇳',
                   style: TextStyle(fontSize: 16),
                 ),
               ),
             ),
-            Spacer(),
+            const Spacer(),
             Center(
               child: ElevatedButton(
                 onPressed: () {
@@ -106,19 +108,19 @@ class _MyDetailsPageState extends State<MyDetailsPage> {
                   print('Phone Number: ${_phoneController.text}');
                 },
                 style: ElevatedButton.styleFrom(
-                  minimumSize: Size(double.infinity, 50),
+                  minimumSize: const Size(double.infinity, 50),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8.0),
                   ),
                 ),
-                child: Text('Submit'),
+                child: const Text('Submit'),
               ),
             ),
           ],
         ),
       ),
       bottomNavigationBar: BottomNavigationBar(
-        items: [
+        items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
           BottomNavigationBarItem(icon: Icon(Icons.bookmark), label: 'Saved'),
@@ -145,7 +147,7 @@ class _MyDetailsPageState extends State<MyDetailsPage> {
       decoration: InputDecoration(
         labelText: label,
         hintText: hint,
-        border: OutlineInputBorder(),
+        border: const OutlineInputBorder(),
         prefixIcon: prefixIcon,
         suffixIcon: suffixIcon,
       ),

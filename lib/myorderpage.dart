@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'trackorder.dart';
 
 class MyOrdersPage extends StatefulWidget {
+  const MyOrdersPage({super.key});
+
   @override
   _MyOrdersPageState createState() => _MyOrdersPageState();
 }
@@ -26,18 +28,18 @@ class _MyOrdersPageState extends State<MyOrdersPage>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('My Orders', style: TextStyle(color: Colors.black)),
+        title: const Text('My Orders', style: TextStyle(color: Colors.black)),
         backgroundColor: Colors.white,
         elevation: 1,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.black),
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () {
             Navigator.pop(context);
           },
         ),
         actions: [
           IconButton(
-            icon: Icon(Icons.notifications, color: Colors.black),
+            icon: const Icon(Icons.notifications, color: Colors.black),
             onPressed: () {
               // Handle notifications
             },
@@ -48,7 +50,7 @@ class _MyOrdersPageState extends State<MyOrdersPage>
           labelColor: Colors.black,
           unselectedLabelColor: Colors.grey,
           indicatorColor: Colors.black,
-          tabs: [
+          tabs: const [
             Tab(text: 'Ongoing'),
             Tab(text: 'Completed'),
           ],
@@ -91,7 +93,7 @@ class _MyOrdersPageState extends State<MyOrdersPage>
       itemBuilder: (context, index) {
         final order = ongoingOrders[index];
         return Card(
-          margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Padding(
             padding: const EdgeInsets.all(16.0),
             child: Row(
@@ -100,20 +102,20 @@ class _MyOrdersPageState extends State<MyOrdersPage>
                   width: 60,
                   height: 60,
                   color: Colors.grey[200],
-                  child: Icon(Icons.image, size: 40, color: Colors.grey),
+                  child: const Icon(Icons.image, size: 40, color: Colors.grey),
                 ),
-                SizedBox(width: 16),
+                const SizedBox(width: 16),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(order['title']!,
-                          style: TextStyle(
+                          style: const TextStyle(
                               fontWeight: FontWeight.bold, fontSize: 16)),
                       Text('Size ${order['size']!}',
-                          style: TextStyle(color: Colors.grey)),
+                          style: const TextStyle(color: Colors.grey)),
                       Text(order['price']!,
-                          style: TextStyle(
+                          style: const TextStyle(
                               fontWeight: FontWeight.bold, fontSize: 16)),
                     ],
                   ),
@@ -122,15 +124,15 @@ class _MyOrdersPageState extends State<MyOrdersPage>
                   children: [
                     Container(
                       padding:
-                          EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                          const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                       decoration: BoxDecoration(
                         color: Colors.grey[200],
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(order['status']!,
-                          style: TextStyle(fontSize: 12)),
+                          style: const TextStyle(fontSize: 12)),
                     ),
-                    SizedBox(height: 8),
+                    const SizedBox(height: 8),
                     ElevatedButton(
                       onPressed: () {
                         // Handle track order
@@ -143,7 +145,7 @@ class _MyOrdersPageState extends State<MyOrdersPage>
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8)),
                       ),
-                      child: Text('Track Order'),
+                      child: const Text('Track Order'),
                     ),
                   ],
                 ),
@@ -182,7 +184,7 @@ class _MyOrdersPageState extends State<MyOrdersPage>
       itemBuilder: (context, index) {
         final order = completedOrders[index];
         return Card(
-          margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Padding(
             padding: const EdgeInsets.all(16.0),
             child: Row(
@@ -191,20 +193,20 @@ class _MyOrdersPageState extends State<MyOrdersPage>
                   width: 60,
                   height: 60,
                   color: Colors.grey[200],
-                  child: Icon(Icons.image, size: 40, color: Colors.grey),
+                  child: const Icon(Icons.image, size: 40, color: Colors.grey),
                 ),
-                SizedBox(width: 16),
+                const SizedBox(width: 16),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(order['title'],
-                          style: TextStyle(
+                          style: const TextStyle(
                               fontWeight: FontWeight.bold, fontSize: 16)),
                       Text('Size ${order['size']}',
-                          style: TextStyle(color: Colors.grey)),
+                          style: const TextStyle(color: Colors.grey)),
                       Text(order['price'],
-                          style: TextStyle(
+                          style: const TextStyle(
                               fontWeight: FontWeight.bold, fontSize: 16)),
                     ],
                   ),
@@ -218,14 +220,14 @@ class _MyOrdersPageState extends State<MyOrdersPage>
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8)),
                         ),
-                        child: Text('Leave Review'),
+                        child: const Text('Leave Review'),
                       )
                     : Row(
                         children: [
-                          Icon(Icons.star, color: Colors.amber, size: 16),
-                          SizedBox(width: 4),
+                          const Icon(Icons.star, color: Colors.amber, size: 16),
+                          const SizedBox(width: 4),
                           Text('${order['rating']}/5',
-                              style: TextStyle(color: Colors.grey)),
+                              style: const TextStyle(color: Colors.grey)),
                         ],
                       ),
               ],
@@ -241,15 +243,15 @@ class _MyOrdersPageState extends State<MyOrdersPage>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.inbox, size: 80, color: Colors.grey),
-          SizedBox(height: 16),
+          const Icon(Icons.inbox, size: 80, color: Colors.grey),
+          const SizedBox(height: 16),
           Text(title,
-              style: TextStyle(
+              style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                   color: Colors.black)),
-          SizedBox(height: 8),
-          Text(subtitle, style: TextStyle(fontSize: 14, color: Colors.grey)),
+          const SizedBox(height: 8),
+          Text(subtitle, style: const TextStyle(fontSize: 14, color: Colors.grey)),
         ],
       ),
     );
@@ -265,12 +267,12 @@ class _MyOrdersPageState extends State<MyOrdersPage>
         return StatefulBuilder(
           builder: (context, setState) {
             return AlertDialog(
-              title: Text('Leave a Review'),
+              title: const Text('Leave a Review'),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text('How was your order?'),
-                  SizedBox(height: 16),
+                  const Text('How was your order?'),
+                  const SizedBox(height: 16),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: List.generate(5, (index) {
@@ -289,10 +291,10 @@ class _MyOrdersPageState extends State<MyOrdersPage>
                       );
                     }),
                   ),
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
                   TextField(
                     controller: reviewController,
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       border: OutlineInputBorder(),
                       hintText: 'Write your review...',
                     ),
@@ -305,7 +307,7 @@ class _MyOrdersPageState extends State<MyOrdersPage>
                   onPressed: () {
                     Navigator.pop(context);
                   },
-                  child: Text('Cancel'),
+                  child: const Text('Cancel'),
                 ),
                 ElevatedButton(
                   onPressed: () {
@@ -314,7 +316,7 @@ class _MyOrdersPageState extends State<MyOrdersPage>
                         'Review for $productTitle: Rating - $selectedRating, Review - ${reviewController.text}');
                     Navigator.pop(context);
                   },
-                  child: Text('Submit'),
+                  child: const Text('Submit'),
                 ),
               ],
             );

@@ -15,16 +15,16 @@ class _AddressPageState extends State<AddressPage> {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () {
             Navigator.pop(context);
           },
         ),
-        title: Text('Address'),
+        title: const Text('Address'),
         centerTitle: true,
         actions: [
           IconButton(
-            icon: Icon(Icons.notifications),
+            icon: const Icon(Icons.notifications),
             onPressed: () {
               // Handle notifications
             },
@@ -36,20 +36,20 @@ class _AddressPageState extends State<AddressPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
+            const Text(
               'Saved Address',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             addresses.isEmpty
-                ? Center(child: Text('No addresses available.'))
+                ? const Center(child: Text('No addresses available.'))
                 : Expanded(
                     child: ListView.builder(
                       itemCount: addresses.length,
                       itemBuilder: (context, index) {
                         final address = addresses[index];
                         return ListTile(
-                          leading: Icon(Icons.location_pin),
+                          leading: const Icon(Icons.location_pin),
                           title: Text(address['nickname']!),
                           subtitle: Text(address['fullAddress']!),
                           trailing: Radio(
@@ -63,7 +63,7 @@ class _AddressPageState extends State<AddressPage> {
                       },
                     ),
                   ),
-            Spacer(),
+            const Spacer(),
             ElevatedButton.icon(
               onPressed: () {
                 Navigator.push(
@@ -79,10 +79,10 @@ class _AddressPageState extends State<AddressPage> {
                   ),
                 );
               },
-              icon: Icon(Icons.add),
-              label: Text('Add New Address'),
+              icon: const Icon(Icons.add),
+              label: const Text('Add New Address'),
               style: ElevatedButton.styleFrom(
-                minimumSize: Size(double.infinity, 50),
+                minimumSize: const Size(double.infinity, 50),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8.0),
                 ),
@@ -114,16 +114,16 @@ class _NewAddressPageState extends State<NewAddressPage> {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () {
             Navigator.pop(context);
           },
         ),
-        title: Text('New Address'),
+        title: const Text('New Address'),
         centerTitle: true,
         actions: [
           IconButton(
-            icon: Icon(Icons.notifications),
+            icon: const Icon(Icons.notifications),
             onPressed: () {
               // Handle notifications
             },
@@ -135,7 +135,7 @@ class _NewAddressPageState extends State<NewAddressPage> {
           Positioned.fill(
             child: Container(
               color: Colors.grey[200],
-              child: Center(
+              child: const Center(
                 child: Icon(Icons.location_pin, size: 80, color: Colors.grey),
               ),
             ),
@@ -146,21 +146,21 @@ class _NewAddressPageState extends State<NewAddressPage> {
             builder: (context, scrollController) {
               return Container(
                 padding: const EdgeInsets.all(16.0),
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
                 ),
                 child: ListView(
                   controller: scrollController,
                   children: [
-                    Text(
+                    const Text(
                       'Address',
                       style:
                           TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
-                    SizedBox(height: 16),
+                    const SizedBox(height: 16),
                     DropdownButtonFormField<String>(
-                      decoration: InputDecoration(
+                      decoration: const InputDecoration(
                         labelText: 'Address Nickname',
                         border: OutlineInputBorder(),
                       ),
@@ -177,16 +177,16 @@ class _NewAddressPageState extends State<NewAddressPage> {
                               ))
                           .toList(),
                     ),
-                    SizedBox(height: 16),
+                    const SizedBox(height: 16),
                     TextField(
                       controller: _fullAddressController,
-                      decoration: InputDecoration(
+                      decoration: const InputDecoration(
                         labelText: 'Full Address',
                         border: OutlineInputBorder(),
                         hintText: 'Enter your full address...',
                       ),
                     ),
-                    SizedBox(height: 16),
+                    const SizedBox(height: 16),
                     Row(
                       children: [
                         Checkbox(
@@ -197,10 +197,10 @@ class _NewAddressPageState extends State<NewAddressPage> {
                             });
                           },
                         ),
-                        Text('Make this a default address'),
+                        const Text('Make this a default address'),
                       ],
                     ),
-                    SizedBox(height: 16),
+                    const SizedBox(height: 16),
                     ElevatedButton(
                       onPressed: () {
                         if (_selectedNickname != null &&
@@ -212,34 +212,34 @@ class _NewAddressPageState extends State<NewAddressPage> {
                           showDialog(
                             context: context,
                             builder: (context) => AlertDialog(
-                              title: Text('Address Saved'),
-                              content: Text('Your address has been saved.'),
+                              title: const Text('Address Saved'),
+                              content: const Text('Your address has been saved.'),
                               actions: [
                                 TextButton(
                                   onPressed: () {
                                     Navigator.pop(context); // Close the popup
                                     Navigator.pop(context); // Navigate back
                                   },
-                                  child: Text('Thanks'),
+                                  child: const Text('Thanks'),
                                 ),
                               ],
                             ),
                           );
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
+                            const SnackBar(
                               content: Text('Please fill all the fields'),
                             ),
                           );
                         }
                       },
-                      child: Text('Add'),
                       style: ElevatedButton.styleFrom(
-                        minimumSize: Size(double.infinity, 50),
+                        minimumSize: const Size(double.infinity, 50),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8.0),
                         ),
                       ),
+                      child: Text('Add'),
                     ),
                   ],
                 ),

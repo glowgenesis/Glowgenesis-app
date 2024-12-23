@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:glowgenesis/CartProvider.dart';
-import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:glowgenesis/BottomCartStrip.dart';
 import 'package:glowgenesis/ProductCard.dart';
@@ -10,6 +8,8 @@ class CartNotifier {
 }
 
 class HomePage extends StatefulWidget {
+  const HomePage({super.key});
+
   @override
   _HomePageState createState() => _HomePageState();
 }
@@ -20,44 +20,14 @@ class _HomePageState extends State<HomePage> {
 
   final List<Map<String, dynamic>> products = [
     {
-      "name": "Sunscreen Cream SPF 50",
-      "category": "UV Protection",
-      "description":
-          "Protects from harmful UV rays | Lightweight & Non-Greasy | Hydrates Skin",
-      "rating": 4.9,
-      "reviews": 512,
-      "price": 499,
-      "image": "assets/antiacne.png",
-    },
-    {
-      "name": "Aloe Vera Gel - 200ml",
-      "category": "Hydration & Soothing",
-      "description":
-          "Soothes skin irritation | Hydrates & Nourishes | Multipurpose Gel",
-      "rating": 4.8,
-      "reviews": 420,
-      "price": 299,
-      "image": "assets/antiacne.png",
-    },
-    {
-      "name": "Vitamin C Face Wash",
-      "category": "Brightening & Refreshing",
-      "description":
-          "Boosts skin radiance | Gently exfoliates | Removes impurities",
-      "rating": 4.7,
-      "reviews": 375,
-      "price": 399,
-      "image": "assets/antiacne.png",
-    },
-    {
       "name": "Body Moisturizer",
       "category": "Deep Nourishment",
       "description":
           "Intensely moisturizes | Smoothens rough skin | Long-lasting hydration",
       "rating": 4.85,
       "reviews": 268,
-      "price": 349,
-      "image": "assets/antiacne.png",
+      "price": 289,
+      "image": "assets/images/moisturizer.png",
     },
     {
       "name": "Anti Acne Face Wash",
@@ -66,8 +36,38 @@ class _HomePageState extends State<HomePage> {
           "Clears acne & pimples | Deeply cleanses | Unclogs pores effectively",
       "rating": 4.75,
       "reviews": 415,
-      "price": 399,
-      "image": "assets/antiacne.png",
+      "price": 195,
+      "image": "assets/images/Anitacne.jpeg",
+    },
+    {
+      "name": "Sunscreen Cream SPF 50",
+      "category": "UV Protection",
+      "description":
+          "Protects from harmful UV rays | Lightweight & Non-Greasy | Hydrates Skin",
+      "rating": 4.9,
+      "reviews": 512,
+      "price": 0,
+      "image": "assets/images/sunscreen.jpeg",
+    },
+    {
+      "name": "Aloe Vera Gel - 200ml",
+      "category": "Hydration & Soothing",
+      "description":
+          "Soothes skin irritation | Hydrates & Nourishes | Multipurpose Gel",
+      "rating": 4.8,
+      "reviews": 420,
+      "price": 0,
+      "image": "assets/images/aloeveragel.jpeg",
+    },
+    {
+      "name": "Vitamin C Face Wash",
+      "category": "Brightening & Refreshing",
+      "description":
+          "Boosts skin radiance | Gently exfoliates | Removes impurities",
+      "rating": 4.7,
+      "reviews": 375,
+      "price": 0,
+      "image": "assets/images/vitaminc.jpeg",
     },
   ];
 
@@ -83,7 +83,10 @@ class _HomePageState extends State<HomePage> {
 
     // Calculate total cart count from SharedPreferences
     prefs.getKeys().forEach((key) {
-      totalCartItems += prefs.getInt(key) ?? 0;
+      // Only add to totalCartItems if the value is an integer
+      if (prefs.get(key) is int) {
+        totalCartItems += prefs.getInt(key) ?? 0;
+      }
     });
 
     cartCount.value = totalCartItems;
@@ -95,8 +98,12 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
+        automaticallyImplyLeading: false, // This removes the back button
         title: Image.asset('assets/logo.png', height: 30),
-        actions: [Icon(Icons.menu, color: Colors.black), SizedBox(width: 14)],
+        actions: const [
+          Icon(Icons.menu, color: Colors.black),
+          SizedBox(width: 14),
+        ],
       ),
       body: Stack(
         children: [
@@ -118,7 +125,7 @@ class _HomePageState extends State<HomePage> {
                         child: TextField(
                           decoration: InputDecoration(
                             hintText: 'Search',
-                            prefixIcon: Icon(Icons.search),
+                            prefixIcon: const Icon(Icons.search),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(30),
                             ),
@@ -178,7 +185,7 @@ class _HomePageState extends State<HomePage> {
             child: ValueListenableBuilder<int>(
               valueListenable: cartCount,
               builder: (context, count, child) {
-                return count > 0 ? BottomCartStrip() : SizedBox.shrink();
+                return count > 0 ? BottomCartStrip() : const SizedBox.shrink();
               },
             ),
           ),

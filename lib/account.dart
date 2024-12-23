@@ -4,17 +4,20 @@ import 'myorderpage.dart';
 import 'addresspage.dart';
 
 class AccountPage extends StatelessWidget {
+  const AccountPage({super.key});
+
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Account'),
+        title: const Text('Account'),
         centerTitle: true,
+        automaticallyImplyLeading: false,
         actions: [
           IconButton(
-            icon: Icon(Icons.notifications),
+            icon: const Icon(Icons.notifications),
             onPressed: () {
               // Add notification functionality here
             },
@@ -38,9 +41,9 @@ class AccountPage extends StatelessWidget {
             onTap: () {
               // Navigate to My Details page
               Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => MyDetailsPage()),
-            );
+                context,
+                MaterialPageRoute(builder: (context) => MyDetailsPage()),
+              );
             },
           ),
           _buildListTile(
@@ -50,9 +53,9 @@ class AccountPage extends StatelessWidget {
             onTap: () {
               // Navigate to Address Book page
               Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => AddressPage()),
-            );
+                context,
+                MaterialPageRoute(builder: (context) => const AddressPage()),
+              );
             },
           ),
           // _buildListTile(
@@ -71,7 +74,7 @@ class AccountPage extends StatelessWidget {
           //     // Navigate to Notifications page
           //   },
           // ),
-          Divider(height: 10, thickness: 1),
+          const Divider(height: 10, thickness: 1),
           _buildListTile(
             context,
             icon: Icons.help_outline,
@@ -88,10 +91,10 @@ class AccountPage extends StatelessWidget {
               // Navigate to Help Center page
             },
           ),
-          Divider(height: 10, thickness: 1),
+          const Divider(height: 10, thickness: 1),
           ListTile(
-            leading: Icon(Icons.logout, color: Colors.red),
-            title: Text(
+            leading: const Icon(Icons.logout, color: Colors.red),
+            title: const Text(
               'Logout',
               style: TextStyle(color: Colors.red),
             ),
@@ -110,8 +113,8 @@ class AccountPage extends StatelessWidget {
       required VoidCallback onTap}) {
     return ListTile(
       leading: Icon(icon, size: 28),
-      title: Text(title, style: TextStyle(fontSize: 16)),
-      trailing: Icon(Icons.arrow_forward_ios, size: 18),
+      title: Text(title, style: const TextStyle(fontSize: 16)),
+      trailing: const Icon(Icons.arrow_forward_ios, size: 18),
       onTap: onTap,
     );
   }

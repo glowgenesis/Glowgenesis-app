@@ -1,22 +1,24 @@
 import 'package:flutter/material.dart';
 
 class TrackOrderPage extends StatelessWidget {
+  const TrackOrderPage({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Track Order', style: TextStyle(color: Colors.black)),
+        title: const Text('Track Order', style: TextStyle(color: Colors.black)),
         backgroundColor: Colors.white,
         elevation: 1,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.black),
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () {
             Navigator.pop(context);
           },
         ),
         actions: [
           IconButton(
-            icon: Icon(Icons.notifications, color: Colors.black),
+            icon: const Icon(Icons.notifications, color: Colors.black),
             onPressed: () {
               // Handle notifications
             },
@@ -44,16 +46,16 @@ class TrackOrderPage extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('Order Status', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                      const Text('Order Status', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                       IconButton(
-                        icon: Icon(Icons.close, color: Colors.grey),
+                        icon: const Icon(Icons.close, color: Colors.grey),
                         onPressed: () {
                           // Handle close
                         },
                       ),
                     ],
                   ),
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
 
                   // Order status timeline
                   Expanded(
@@ -88,7 +90,7 @@ class TrackOrderPage extends StatelessWidget {
                   ),
 
                   // Delivery guy details
-                  Divider(height: 24),
+                  const Divider(height: 24),
                   Row(
                     children: [
                       CircleAvatar(
@@ -96,8 +98,8 @@ class TrackOrderPage extends StatelessWidget {
                         radius: 30,
                         child: Icon(Icons.person, color: Colors.grey[600], size: 40),
                       ),
-                      SizedBox(width: 16),
-                      Expanded(
+                      const SizedBox(width: 16),
+                      const Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -107,7 +109,7 @@ class TrackOrderPage extends StatelessWidget {
                         ),
                       ),
                       IconButton(
-                        icon: Icon(Icons.phone, color: Colors.black),
+                        icon: const Icon(Icons.phone, color: Colors.black),
                         onPressed: () {
                           // Handle call
                         },
@@ -141,15 +143,15 @@ class TrackOrderPage extends StatelessWidget {
             ),
           ],
         ),
-        SizedBox(width: 16),
+        const SizedBox(width: 16),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(status, style: TextStyle(fontWeight: FontWeight.bold)),
-              SizedBox(height: 4),
-              Text(address, style: TextStyle(color: Colors.grey)),
-              SizedBox(height: 16),
+              Text(status, style: const TextStyle(fontWeight: FontWeight.bold)),
+              const SizedBox(height: 4),
+              Text(address, style: const TextStyle(color: Colors.grey)),
+              const SizedBox(height: 16),
             ],
           ),
         ),

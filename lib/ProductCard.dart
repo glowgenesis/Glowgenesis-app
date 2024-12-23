@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:glowgenesis/CartProvider.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'CartProvider.dart';
 
 class ProductCard extends StatefulWidget {
   final String name;
@@ -13,7 +13,7 @@ class ProductCard extends StatefulWidget {
   final String imagePath;
 
   const ProductCard({
-    Key? key,
+    super.key,
     required this.name,
     required this.category,
     required this.description,
@@ -21,7 +21,7 @@ class ProductCard extends StatefulWidget {
     required this.reviews,
     required this.price,
     required this.imagePath,
-  }) : super(key: key);
+  });
 
   @override
   _ProductCardState createState() => _ProductCardState();
@@ -54,14 +54,14 @@ class _ProductCardState extends State<ProductCard> {
     });
     _saveQuantity(quantity);
 
-    final cartProvider = Provider.of<CartProvider>(context, listen: false);
-    cartProvider.addToCart({
+    final cartController = Provider.of<CartController>(context, listen: false);
+    cartController.addToCart({
       'name': widget.name,
       'category': widget.category,
       'description': widget.description,
       'price': widget.price,
       'image': widget.imagePath,
-      'quantity': 1, // Always add 1 to the cart
+      'quantity': 1, // Increment by 1
     });
   }
 
@@ -72,26 +72,22 @@ class _ProductCardState extends State<ProductCard> {
       });
       _saveQuantity(quantity);
 
-      final cartProvider = Provider.of<CartProvider>(context, listen: false);
+      final cartController =
+          Provider.of<CartController>(context, listen: false);
       if (quantity == 0) {
-        cartProvider.removeFromCart(widget.name);
+        cartController.removeFromCart(widget.name);
       } else {
-        cartProvider.addToCart({
-          'name': widget.name,
-          'category': widget.category,
-          'description': widget.description,
-          'price': widget.price,
-          'image': widget.imagePath,
-          'quantity': quantity,
-        });
+        cartController.updateQuantity(widget.name, quantity);
       }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final cartController = Provider.of<CartController>(context);
+    quantity = cartController.getQuantity(widget.name);
+
     return SizedBox(
-      // height: 300, // Set a fixed height for the card
       child: Card(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10),
@@ -100,7 +96,7 @@ class _ProductCardState extends State<ProductCard> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             ClipRRect(
-              borderRadius: BorderRadius.vertical(top: Radius.circular(10)),
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(10)),
               child: Image.asset(
                 widget.imagePath,
                 height: 120,
@@ -116,79 +112,106 @@ class _ProductCardState extends State<ProductCard> {
                   Chip(
                     label: Text(
                       widget.category,
-                      style: TextStyle(fontSize: 8),
+                      style: const TextStyle(fontSize: 8),
                     ),
                     backgroundColor: Colors.green.shade50,
                   ),
-                  SizedBox(height: 5),
+                  const SizedBox(height: 5),
                   Text(
                     widget.name,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 12,
                     ),
                   ),
-                  SizedBox(height: 5),
+                  const SizedBox(height: 5),
+                  Text(
+                    "₹${widget.price}",
+                    style: const TextStyle(fontSize: 12),
+                  ),
+                  const SizedBox(height: 5),
                   Text(
                     widget.description,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(fontSize: 12, color: Colors.grey),
+                    style: const TextStyle(fontSize: 12, color: Colors.grey),
                   ),
-                  SizedBox(height: 5),
+                  const SizedBox(height: 5),
                   Row(
                     children: [
-                      Icon(Icons.star, color: Colors.amber, size: 16),
-                      SizedBox(width: 5),
-                      Text("${widget.rating}", style: TextStyle(fontSize: 12)),
+                      const Icon(Icons.star, color: Colors.amber, size: 16),
+                      const SizedBox(width: 5),
+                      Text("${widget.rating}", style: const TextStyle(fontSize: 12)),
                       Text(" (${widget.reviews} Reviews)",
-                          style: TextStyle(fontSize: 12, color: Colors.grey)),
+                          style: const TextStyle(fontSize: 12, color: Colors.grey)),
                     ],
                   ),
-                  SizedBox(height: 5),
+                  const SizedBox(height: 5),
                 ],
               ),
             ),
             SizedBox(
               width: double.infinity,
-              child: quantity == 0
+              child: widget.price == 0
                   ? ElevatedButton(
-                      onPressed: () => _incrementQuantity(context),
+                      onPressed: null, // Button disabled for "Coming Soon"
                       style: ElevatedButton.styleFrom(
-                        shape: RoundedRectangleBorder(
+                        shape: const RoundedRectangleBorder(
                           borderRadius: BorderRadius.vertical(
                             bottom: Radius.circular(10),
                           ),
                         ),
-                        backgroundColor: Colors.orange,
+                        backgroundColor: Colors.grey,
                       ),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 10.0),
+                      child: const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 10.0),
                         child: Text(
-                          "Add to Cart",
-                          style: TextStyle(fontWeight: FontWeight.bold),
+                          "Coming Soon",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
                     )
-                  : Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        IconButton(
-                          icon: Icon(Icons.remove, color: Colors.red),
-                          onPressed: () => _decrementQuantity(context),
-                        ),
-                        Text(
-                          "$quantity",
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        IconButton(
-                          icon: Icon(Icons.add, color: Colors.green),
+                  : quantity == 0
+                      ? ElevatedButton(
                           onPressed: () => _incrementQuantity(context),
+                          style: ElevatedButton.styleFrom(
+                            shape: const RoundedRectangleBorder(
+                              borderRadius: BorderRadius.vertical(
+                                bottom: Radius.circular(10),
+                              ),
+                            ),
+                            backgroundColor: Colors.orange,
+                          ),
+                          child: const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 10.0),
+                            child: Text(
+                              "Add to Cart",
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        )
+                      : Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.remove, color: Colors.red),
+                              onPressed: () => _decrementQuantity(context),
+                            ),
+                            Text(
+                              "$quantity",
+                              style: const TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.add, color: Colors.green),
+                              onPressed: () => _incrementQuantity(context),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
             ),
           ],
         ),

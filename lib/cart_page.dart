@@ -1,24 +1,29 @@
 import 'package:flutter/material.dart';
+import 'package:glowgenesis/CartProvider.dart';
 import 'package:provider/provider.dart';
-import 'CartProvider.dart'; // Import CartProvider
 
 class CartPage extends StatelessWidget {
+  const CartPage({super.key});
+
   @override
   Widget build(BuildContext context) {
-    final cartProvider = Provider.of<CartProvider>(context);
-    final cartItems = cartProvider.cartItems;
-    final subTotal = cartProvider.calculateSubTotal();
-    final shippingFee = cartProvider.calculateShippingFee(subTotal);
+    final cartController = Provider.of<CartController>(context);
+    final cartItems = cartController.cartItems.values.toList();
+    final subTotal = cartItems.fold<double>(
+      0.0,
+      (sum, item) => sum + (item['price'] * item['quantity']),
+    );
+    final shippingFee = subTotal > 500 ? 0.0 : 50.0;
     final total = subTotal + shippingFee;
 
     return SafeArea(
       child: Scaffold(
-        backgroundColor: Colors.grey[100],
+        backgroundColor: Colors.grey[50],
         appBar: AppBar(
           backgroundColor: Colors.white,
           elevation: 2,
           centerTitle: true,
-          title: Text(
+          title: const Text(
             'My Cart',
             style: TextStyle(
               color: Colors.black,
@@ -26,29 +31,67 @@ class CartPage extends StatelessWidget {
               fontWeight: FontWeight.bold,
             ),
           ),
-          leading: IconButton(
-            icon: Icon(Icons.arrow_back_ios, color: Colors.black),
-            onPressed: () => Navigator.pop(context),
-          ),
         ),
         body: cartItems.isEmpty
-            ? Center(child: Text('Your cart is empty!'))
+            ? Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(
+                      Icons.shopping_cart_outlined,
+                      size: 80,
+                      color: Colors.grey,
+                    ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Your cart is empty!',
+                      style: TextStyle(fontSize: 16, color: Colors.grey),
+                    ),
+                    const SizedBox(height: 12),
+                    ElevatedButton(
+                      onPressed: () {
+                        // Navigator.pop(context); // Navigate to shopping page
+                        Navigator.pushNamed(context, '/home');
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.orange,
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 12, horizontal: 24),
+                      ),
+                      child: const Text('Start Shopping'),
+                    ),
+                  ],
+                ),
+              )
             : Column(
                 children: [
                   // Free Shipping Progress
                   Container(
-                    padding: EdgeInsets.all(12),
-                    color: Colors.orange.shade50,
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.orange.shade50,
+                      borderRadius: BorderRadius.circular(8),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black12,
+                          blurRadius: 6,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    margin: const EdgeInsets.all(12),
                     child: Column(
                       children: [
                         Text(
-                          'You are ₹60.00 away from FREE shipping.',
-                          style: TextStyle(fontSize: 14),
+                          subTotal >= 500
+                              ? 'You have unlocked FREE shipping!'
+                              : 'Spend ₹${(500 - subTotal).clamp(0, 500).toStringAsFixed(2)} more for FREE shipping.',
+                          style: const TextStyle(fontSize: 14),
                         ),
-                        SizedBox(height: 8),
+                        const SizedBox(height: 8),
                         LinearProgressIndicator(
-                          value: 0.7, // Example progress
-                          color: Colors.orange,
+                          value: (subTotal / 500).clamp(0, 1),
+                          color: subTotal >= 500 ? Colors.green : Colors.orange,
                           backgroundColor: Colors.orange.shade100,
                         ),
                       ],
@@ -61,97 +104,97 @@ class CartPage extends StatelessWidget {
                       itemCount: cartItems.length,
                       itemBuilder: (context, index) {
                         final item = cartItems[index];
-                        return Card(
-                          margin: EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 8,
+                        return Dismissible(
+                          key: Key(item['name']),
+                          direction: DismissDirection.endToStart,
+                          onDismissed: (_) {
+                            cartController.removeFromCart(item['name']);
+                          },
+                          background: Container(
+                            alignment: Alignment.centerRight,
+                            color: Colors.red,
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            child:
+                                const Icon(Icons.delete, color: Colors.white),
                           ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(12.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    // Product Image
-                                    ClipRRect(
-                                      borderRadius: BorderRadius.circular(8),
-                                      child: Image.network(
-                                        item['image'],
-                                        width: 80,
-                                        height: 80,
-                                        fit: BoxFit.cover,
-                                      ),
+                          child: Card(
+                            elevation: 4,
+                            margin: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 8,
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(12.0),
+                              child: Row(
+                                children: [
+                                  // Product Image
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(8),
+                                    child: Image.network(
+                                      item['image'],
+                                      width: 80,
+                                      height: 80,
+                                      fit: BoxFit.cover,
                                     ),
-                                    SizedBox(width: 12),
+                                  ),
+                                  const SizedBox(width: 12),
 
-                                    // Product Details
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            item['name'],
-                                            maxLines: 2,
-                                            overflow: TextOverflow.ellipsis,
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 16,
-                                            ),
-                                          ),
-                                          SizedBox(height: 4),
-                                          Text(
-                                            '₹${item['price'].toStringAsFixed(2)}',
-                                            style: TextStyle(
-                                              fontSize: 14,
-                                              color: Colors.grey,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-
-                                    // Quantity Controls
-                                    Column(
+                                  // Product Details
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
-                                        IconButton(
-                                          icon: Icon(Icons.add_circle,
-                                              color: Colors.green),
-                                          onPressed: () => cartProvider
-                                              .updateQuantity(index, 1),
+                                        Text(
+                                          item['name'],
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 16,
+                                          ),
                                         ),
-                                        Text('${item['quantity']}',
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 14,
-                                            )),
-                                        IconButton(
-                                          icon: Icon(Icons.remove_circle,
-                                              color: Colors.red),
-                                          onPressed: () => cartProvider
-                                              .updateQuantity(index, -1),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          '₹${item['price'].toStringAsFixed(2)}',
+                                          style: const TextStyle(
+                                            fontSize: 14,
+                                            color: Colors.grey,
+                                          ),
                                         ),
                                       ],
                                     ),
-                                  ],
-                                ),
-                                SizedBox(height: 8),
-                                // Divider
-                                Divider(),
-                                Row(
-                                  children: [
-                                    Icon(Icons.timer,
-                                        color: Colors.orange, size: 16),
-                                    SizedBox(width: 8),
-                                    Text('Limited Time Deal: 1m 39s left',
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: Colors.grey,
-                                        )),
-                                  ],
-                                ),
-                              ],
+                                  ),
+
+                                  // Quantity Controls
+                                  Column(
+                                    children: [
+                                      IconButton(
+                                        icon: const Icon(Icons.add_circle,
+                                            color: Colors.green),
+                                        onPressed: () =>
+                                            cartController.addToCart({
+                                          ...item,
+                                          'quantity': 1,
+                                        }),
+                                      ),
+                                      Text('${item['quantity']}',
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 14,
+                                          )),
+                                      IconButton(
+                                        icon: const Icon(Icons.remove_circle,
+                                            color: Colors.red),
+                                        onPressed: () =>
+                                            cartController.updateQuantity(
+                                                item['name'],
+                                                item['quantity'] - 1),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         );
@@ -161,16 +204,16 @@ class CartPage extends StatelessWidget {
 
                   // Cart Summary and Checkout Button
                   Container(
-                    padding: EdgeInsets.all(16),
-                    decoration: BoxDecoration(
+                    padding: const EdgeInsets.all(16),
+                    decoration: const BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.vertical(
-                        top: Radius.circular(20),
+                        top: Radius.circular(16),
                       ),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black12,
-                          blurRadius: 10,
+                          blurRadius: 8,
                           offset: Offset(0, -2),
                         ),
                       ],
@@ -180,52 +223,62 @@ class CartPage extends StatelessWidget {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text('Subtotal', style: TextStyle(fontSize: 16)),
+                            const Text('Subtotal',
+                                style: TextStyle(fontSize: 16)),
                             Text('₹${subTotal.toStringAsFixed(2)}',
-                                style: TextStyle(fontSize: 16)),
+                                style: const TextStyle(fontSize: 16)),
                           ],
                         ),
-                        SizedBox(height: 8),
+                        const SizedBox(height: 8),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text('Shipping Fee',
+                            const Text('Shipping Fee',
                                 style: TextStyle(fontSize: 16)),
-                            Text('₹${shippingFee.toStringAsFixed(2)}',
-                                style: TextStyle(fontSize: 16)),
+                            Text(
+                              shippingFee == 0
+                                  ? 'FREE'
+                                  : '₹${shippingFee.toStringAsFixed(2)}',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: shippingFee == 0
+                                    ? Colors.green
+                                    : Colors.black,
+                              ),
+                            ),
                           ],
                         ),
-                        Divider(height: 24, thickness: 1),
+                        const Divider(height: 24, thickness: 1),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text('Total',
+                            const Text('Total',
                                 style: TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
                                 )),
                             Text('₹${total.toStringAsFixed(2)}',
-                                style: TextStyle(
+                                style: const TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
                                   color: Colors.green,
                                 )),
                           ],
                         ),
-                        SizedBox(height: 16),
+                        const SizedBox(height: 16),
                         ElevatedButton(
                           onPressed: () {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
+                              const SnackBar(
                                 content: Text('Proceeding to Checkout...'),
                               ),
                             );
                           },
                           style: ElevatedButton.styleFrom(
-                            padding: EdgeInsets.symmetric(vertical: 8),
                             backgroundColor: Colors.orange,
+                            // padding: const EdgeInsets.symmetric(vertical: 12),
                           ),
-                          child: Text(
+                          child: const Text(
                             'Checkout',
                             style: TextStyle(
                               fontWeight: FontWeight.bold,

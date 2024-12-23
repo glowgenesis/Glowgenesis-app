@@ -1,44 +1,41 @@
 import 'package:flutter/material.dart';
 
-class CartProvider with ChangeNotifier {
-  final List<Map<String, dynamic>> _cartItems = [];
-  final ValueNotifier<int> cartCount = ValueNotifier<int>(0); // Added
+class CartController extends ChangeNotifier {
+  final Map<String, Map<String, dynamic>> _cartItems = {};
 
-  List<Map<String, dynamic>> get cartItems => _cartItems;
+  Map<String, Map<String, dynamic>> get cartItems => _cartItems;
+
+  int quantity = 0;
 
   void addToCart(Map<String, dynamic> item) {
-    int index =
-        _cartItems.indexWhere((element) => element['name'] == item['name']);
-    if (index >= 0) {
-      _cartItems[index]['quantity'] += item['quantity'];
+    String name = item['name'];
+    if (_cartItems.containsKey(name)) {
+      _cartItems[name]!['quantity'] += item['quantity'];
     } else {
-      _cartItems.add(item);
+      _cartItems[name] = {...item};
     }
-    cartCount.value = _cartItems.length; // Update cart count
     notifyListeners();
+  }
+
+  void updateQuantity(String name, int quantity) {
+    if (_cartItems.containsKey(name)) {
+      if (quantity > 0) {
+        _cartItems[name]!['quantity'] = quantity;
+      } else {
+        _cartItems.remove(name);
+      }
+      notifyListeners();
+    }
   }
 
   void removeFromCart(String name) {
-    _cartItems.removeWhere((item) => item['name'] == name);
-    cartCount.value = _cartItems.length; // Update cart count
-    notifyListeners();
-  }
-
-  void updateQuantity(int index, int change) {
-    _cartItems[index]['quantity'] += change;
-    if (_cartItems[index]['quantity'] <= 0) {
-      _cartItems.removeAt(index);
+    if (_cartItems.containsKey(name)) {
+      _cartItems.remove(name);
+      notifyListeners();
     }
-    cartCount.value = _cartItems.length; // Update cart count
-    notifyListeners();
   }
 
-  double calculateSubTotal() {
-    return _cartItems.fold(
-        0.0, (total, item) => total + item['price'] * item['quantity']);
-  }
-
-  double calculateShippingFee(double subTotal) {
-    return subTotal > 500 ? 0 : 50; // Free shipping for orders above ₹500
+  int getQuantity(String name) {
+    return _cartItems[name]?['quantity'] ?? 0;
   }
 }

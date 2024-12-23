@@ -6,7 +6,7 @@ class SavedPage extends StatelessWidget {
   final List<Map<String, dynamic>>
       likedProducts; // Receiving list of liked products
 
-  SavedPage({required this.likedProducts});
+  const SavedPage({super.key, required this.likedProducts});
 
   @override
   Widget build(BuildContext context) {
@@ -18,8 +18,8 @@ class SavedPage extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        leading: Icon(Icons.menu, color: Colors.black),
-        title: Text('Saved Items'),
+        leading: const Icon(Icons.menu, color: Colors.black),
+        title: const Text('Saved Items'),
       ),
       body: Padding(
         padding: EdgeInsets.symmetric(
@@ -30,7 +30,7 @@ class SavedPage extends StatelessWidget {
           children: [
             Expanded(
               child: likedProducts.isEmpty
-                  ? Center(
+                  ? const Center(
                       child: Text(
                         'No saved products yet!',
                         style: TextStyle(fontSize: 18, color: Colors.grey),
@@ -69,7 +69,7 @@ class SavedPage extends StatelessWidget {
                             // );
                           },
                           child: Card(
-                            color: Color.fromRGBO(247, 242, 250, 1),
+                            color: const Color.fromRGBO(247, 242, 250, 1),
                             shape: RoundedRectangleBorder(
                               borderRadius:
                                   BorderRadius.circular(screenWidth * 0.04),
@@ -99,7 +99,7 @@ class SavedPage extends StatelessWidget {
                                                 width: double.infinity,
                                                 errorBuilder: (context, error,
                                                     stackTrace) {
-                                                  return Icon(Icons.error,
+                                                  return const Icon(Icons.error,
                                                       size: 50);
                                                 },
                                               )
@@ -110,7 +110,7 @@ class SavedPage extends StatelessWidget {
                                                 width: double.infinity,
                                                 errorBuilder: (context, error,
                                                     stackTrace) {
-                                                  return Icon(Icons.error,
+                                                  return const Icon(Icons.error,
                                                       size: 50);
                                                 },
                                               ),
