@@ -90,7 +90,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: LoginPage(), // Start with the splash screen
+      home: MainNavigation(), // Start with the splash screen
       routes: {
         '/login': (context) => LoginPage(),
         '/cart': (context) => CartPage(),
