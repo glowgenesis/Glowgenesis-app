@@ -4,8 +4,16 @@ class CartController extends ChangeNotifier {
   final Map<String, Map<String, dynamic>> _cartItems = {};
 
   Map<String, Map<String, dynamic>> get cartItems => _cartItems;
+  String? _deliveryAddress;
 
   int quantity = 0;
+
+  String? get deliveryAddress => _deliveryAddress;
+
+  void updateDeliveryAddress(String address) {
+    _deliveryAddress = address;
+    notifyListeners();
+  }
 
   void addToCart(Map<String, dynamic> item) {
     String name = item['name'];

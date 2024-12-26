@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:glowgenesis/address/address.dart';
 import 'package:glowgenesis/api.dart';
 import 'package:glowgenesis/bottmnavbar.dart';
 import 'package:provider/provider.dart';
@@ -95,6 +96,7 @@ class MyApp extends StatelessWidget {
         '/login': (context) => LoginPage(),
         '/cart': (context) => CartPage(),
         '/home': (context) => MainNavigation(),
+        '/add-address': (context) => AddDeliveryAddressPage(),
       },
     );
   }

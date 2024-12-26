@@ -16,6 +16,10 @@ class CartPage extends StatelessWidget {
     final shippingFee = subTotal > 500 ? 0.0 : 50.0;
     final total = subTotal + shippingFee;
 
+    // Mock address (replace with actual address management logic)
+    String? address = cartController
+        .deliveryAddress; // Replace with actual state management logic.
+
     return SafeArea(
       child: Scaffold(
         backgroundColor: Colors.grey[50],
@@ -50,7 +54,6 @@ class CartPage extends StatelessWidget {
                     const SizedBox(height: 12),
                     ElevatedButton(
                       onPressed: () {
-                        // Navigator.pop(context); // Navigate to shopping page
                         Navigator.pushNamed(context, '/home');
                       },
                       style: ElevatedButton.styleFrom(
@@ -65,6 +68,79 @@ class CartPage extends StatelessWidget {
               )
             : Column(
                 children: [
+                  // Address Section
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    margin: const EdgeInsets.symmetric(
+                        vertical: 12, horizontal: 16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(8),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black12,
+                          blurRadius: 6,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: address != null
+                        ? Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Deliver to:',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                address,
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                              Align(
+                                alignment: Alignment.centerRight,
+                                child: TextButton(
+                                  onPressed: () {
+                                    // Navigate to edit address screen
+                                    Navigator.pushNamed(
+                                        context, '/add-address');
+                                  },
+                                  child: const Text('Change',
+                                      style: TextStyle(color: Colors.blue)),
+                                ),
+                              )
+                            ],
+                          )
+                        : Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text(
+                                'No delivery address added.',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.black54,
+                                ),
+                              ),
+                              ElevatedButton(
+                                onPressed: () {
+                                  // Navigate to add address screen
+                                  Navigator.pushNamed(context, '/add-address');
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.orange,
+                                ),
+                                child: const Text('Add Address'),
+                              ),
+                            ],
+                          ),
+                  ),
+
                   // Free Shipping Progress
                   Container(
                     padding: const EdgeInsets.all(12),
@@ -167,8 +243,21 @@ class CartPage extends StatelessWidget {
                                   ),
 
                                   // Quantity Controls
-                                  Column(
+                                  Row(
                                     children: [
+                                      IconButton(
+                                        icon: const Icon(Icons.remove_circle,
+                                            color: Colors.red),
+                                        onPressed: () =>
+                                            cartController.updateQuantity(
+                                                item['name'],
+                                                item['quantity'] - 1),
+                                      ),
+                                      Text('${item['quantity']}',
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 14,
+                                          )),
                                       IconButton(
                                         icon: const Icon(Icons.add_circle,
                                             color: Colors.green),
@@ -177,19 +266,6 @@ class CartPage extends StatelessWidget {
                                           ...item,
                                           'quantity': 1,
                                         }),
-                                      ),
-                                      Text('${item['quantity']}',
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 14,
-                                          )),
-                                      IconButton(
-                                        icon: const Icon(Icons.remove_circle,
-                                            color: Colors.red),
-                                        onPressed: () =>
-                                            cartController.updateQuantity(
-                                                item['name'],
-                                                item['quantity'] - 1),
                                       ),
                                     ],
                                   ),
@@ -276,7 +352,6 @@ class CartPage extends StatelessWidget {
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.orange,
-                            // padding: const EdgeInsets.symmetric(vertical: 12),
                           ),
                           child: const Text(
                             'Checkout',

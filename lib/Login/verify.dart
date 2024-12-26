@@ -4,6 +4,7 @@ import 'package:glowgenesis/api.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert'; // For JSON encoding/decoding
 import 'package:shared_preferences/shared_preferences.dart'; // For token storage
+import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 
 class OtpVerificationPage extends StatefulWidget {
   final String phoneNumber;
@@ -31,7 +32,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
           headers: {'Content-Type': 'application/json'},
           body: jsonEncode({'phoneNumber': widget.phoneNumber, 'otp': otp}),
         );
-
+        print(response.statusCode);
         if (response.statusCode == 200) {
           final responseData = jsonDecode(response.body);
           final token = responseData['token'];
@@ -39,25 +40,61 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
           final prefs = await SharedPreferences.getInstance();
           await prefs.setString('authToken', token);
 
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('OTP Verified Successfully')),
+          final snackBar = SnackBar(
+            content: AwesomeSnackbarContent(
+              title: 'Success!',
+              message: 'OTP Verified Successfully',
+              contentType: ContentType.success,
+            ),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: Colors.transparent,
+            elevation: 0,
           );
 
+          ScaffoldMessenger.of(context).showSnackBar(snackBar);
           Navigator.pushReplacementNamed(context, '/home');
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Invalid or expired OTP')),
+          final snackBar = SnackBar(
+            content: AwesomeSnackbarContent(
+              title: 'Error!',
+              message: 'Invalid or expired OTP',
+              contentType: ContentType.failure,
+            ),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: Colors.transparent,
+            elevation: 0,
           );
+
+          ScaffoldMessenger.of(context).showSnackBar(snackBar);
         }
       } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error verifying OTP: $e')),
+        final snackBar = SnackBar(
+          content: AwesomeSnackbarContent(
+            title: 'Error!',
+            message: 'Error verifying OTP',
+            contentType: ContentType.failure,
+          ),
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: Colors.transparent,
+          elevation: 0,
         );
+
+        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+        print("Error verifying OTP: $e");
       }
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a valid OTP')),
+      final snackBar = SnackBar(
+        content: AwesomeSnackbarContent(
+          title: 'Warning!',
+          message: 'Please enter a valid OTP',
+          contentType: ContentType.warning,
+        ),
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
       );
+
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
     }
   }
 
