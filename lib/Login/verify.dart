@@ -7,9 +7,10 @@ import 'package:shared_preferences/shared_preferences.dart'; // For token storag
 import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 
 class OtpVerificationPage extends StatefulWidget {
-  final String phoneNumber;
+  // final String phoneNumber;
+  final String email;
 
-  const OtpVerificationPage({super.key, required this.phoneNumber});
+  const OtpVerificationPage({super.key, required this.email});
 
   @override
   _OtpVerificationPageState createState() => _OtpVerificationPageState();
@@ -30,7 +31,8 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
         final response = await http.post(
           Uri.parse('${Api.backendApi}/verify-otp'),
           headers: {'Content-Type': 'application/json'},
-          body: jsonEncode({'phoneNumber': widget.phoneNumber, 'otp': otp}),
+          // body: jsonEncode({'phoneNumber': widget.email, 'otp': otp}),
+          body: jsonEncode({'email': widget.email, 'otp': otp}),
         );
         print(response.statusCode);
         if (response.statusCode == 200) {
@@ -39,6 +41,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
 
           final prefs = await SharedPreferences.getInstance();
           await prefs.setString('authToken', token);
+          await prefs.setString('email', widget.email);
 
           final snackBar = SnackBar(
             content: AwesomeSnackbarContent(
@@ -128,7 +131,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Text(
-              'A one-time password (OTP) has been sent to ${widget.phoneNumber}.',
+              'A one-time password (OTP) has been sent to ${widget.email}.',
               style: const TextStyle(fontSize: 16),
               textAlign: TextAlign.center,
             ),

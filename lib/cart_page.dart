@@ -1,9 +1,131 @@
+import 'dart:convert';
+import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
+import 'package:glowgenesis/api.dart';
+import 'package:glowgenesis/razorpay_web.dart';
+import 'package:http/http.dart' as http;
+
 import 'package:flutter/material.dart';
 import 'package:glowgenesis/CartProvider.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+// import 'package:razorpay_flutter/razorpay_flutter.dart';
 
-class CartPage extends StatelessWidget {
+import 'package:slider_button/slider_button.dart';
+
+class CartPage extends StatefulWidget {
   const CartPage({super.key});
+
+  @override
+  State<CartPage> createState() => _CartPageState();
+}
+
+class _CartPageState extends State<CartPage> {
+  Map<String, dynamic>? address;
+  bool isPaymentInProgress = false;
+  @override
+  void initState() {
+    super.initState();
+    fetchUserAddress();
+  }
+
+  void setPaymentProgressIfAddressIsNull() {
+    setState(() {
+      if (address == null) {
+        isPaymentInProgress = true;
+      } else {
+        isPaymentInProgress = false;
+      }
+    });
+  }
+
+  Future<Map<String, dynamic>> fetchUserAddress() async {
+    final prefs = await SharedPreferences.getInstance();
+    final email = prefs.getString('email');
+    final url = Uri.parse(
+        '${Api.backendApi}/user/address'); // Replace with your actual API URL
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: json.encode({'email': email}),
+      );
+
+      print(response.body);
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+
+        setState(() {
+          address = data['address']; // Store the fetched address
+        });
+
+        if (data['success'] == true) {
+          return {'success': true, 'address': data['address']};
+        } else {
+          return {'success': false, 'message': data['message']};
+        }
+      } else {
+        setPaymentProgressIfAddressIsNull();
+        print(isPaymentInProgress);
+        return {
+          'success': false,
+          'message':
+              'Failed to fetch address. HTTP Status: ${response.statusCode}'
+        };
+      }
+    } catch (error) {
+      return {'success': false, 'message': 'Error: $error'};
+    }
+  }
+
+  Future<Map<String, dynamic>> createOrder(
+      int amount, String currency, String receipt) async {
+    final response = await http.post(
+      Uri.parse('${Api.backendApi}/create-order'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'amount': amount,
+        'currency': currency,
+        'receipt': receipt,
+      }),
+    );
+
+    print('Response Status: ${response.statusCode}');
+    print('Response Body: ${response.body}');
+
+    if (response.statusCode == 201) {
+      final responseData = jsonDecode(response.body);
+      if (responseData['success'] == true) {
+        return responseData['order']; // Return the order object
+      } else {
+        throw Exception('Order creation failed: ${responseData['message']}');
+      }
+    } else {
+      throw Exception('Failed to create order: ${response.body}');
+    }
+  }
+
+  Future<bool> verifyPayment(
+      String orderId, String paymentId, String signature) async {
+    final response = await http.post(
+      Uri.parse('${Api.backendApi}/verify-payment'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'razorpay_order_id': orderId,
+        'razorpay_payment_id': paymentId,
+        'razorpay_signature': signature,
+      }),
+    );
+
+    print(response.body);
+
+    if (response.statusCode == 200) {
+      return true;
+    } else {
+      throw Exception('Failed to verify payment: ${response.body}');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -15,10 +137,6 @@ class CartPage extends StatelessWidget {
     );
     final shippingFee = subTotal > 500 ? 0.0 : 50.0;
     final total = subTotal + shippingFee;
-
-    // Mock address (replace with actual address management logic)
-    String? address = cartController
-        .deliveryAddress; // Replace with actual state management logic.
 
     return SafeArea(
       child: Scaffold(
@@ -68,79 +186,6 @@ class CartPage extends StatelessWidget {
               )
             : Column(
                 children: [
-                  // Address Section
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    margin: const EdgeInsets.symmetric(
-                        vertical: 12, horizontal: 16),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(8),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black12,
-                          blurRadius: 6,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: address != null
-                        ? Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                'Deliver to:',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                address,
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.black87,
-                                ),
-                              ),
-                              Align(
-                                alignment: Alignment.centerRight,
-                                child: TextButton(
-                                  onPressed: () {
-                                    // Navigate to edit address screen
-                                    Navigator.pushNamed(
-                                        context, '/add-address');
-                                  },
-                                  child: const Text('Change',
-                                      style: TextStyle(color: Colors.blue)),
-                                ),
-                              )
-                            ],
-                          )
-                        : Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text(
-                                'No delivery address added.',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.black54,
-                                ),
-                              ),
-                              ElevatedButton(
-                                onPressed: () {
-                                  // Navigate to add address screen
-                                  Navigator.pushNamed(context, '/add-address');
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.orange,
-                                ),
-                                child: const Text('Add Address'),
-                              ),
-                            ],
-                          ),
-                  ),
-
                   // Free Shipping Progress
                   Container(
                     padding: const EdgeInsets.all(12),
@@ -173,6 +218,81 @@ class CartPage extends StatelessWidget {
                       ],
                     ),
                   ),
+                  // Address Section
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    margin: const EdgeInsets.symmetric(
+                        vertical: 12, horizontal: 16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(8),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black12,
+                          blurRadius: 6,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: address != null && address!.isNotEmpty
+                        ? Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Deliver to:',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                '${address!['fullName']}\n${address!['houseDetails']}, ${address!['roadDetails']}, ${address!['landmark']}, ${address!['city']}, ${address!['state']} - ${address!['pincode']}',
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                              Align(
+                                alignment: Alignment.centerRight,
+                                child: TextButton(
+                                  onPressed: () {
+                                    // Navigate to edit address screen
+                                    Navigator.pushNamed(
+                                        context, '/add-address');
+                                  },
+                                  child: const Text(
+                                    'Change',
+                                    style: TextStyle(color: Colors.blue),
+                                  ),
+                                ),
+                              )
+                            ],
+                          )
+                        : Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text(
+                                'No delivery address added.',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.black54,
+                                ),
+                              ),
+                              IconButton(
+                                onPressed: () {
+                                  // Navigate to add address screen
+                                  Navigator.pushNamed(context, '/add-address');
+                                },
+                                icon: const Icon(
+                                  Icons.add,
+                                  color: Colors.blue,
+                                ),
+                                tooltip: 'Add Address',
+                              ),
+                            ],
+                          ),
+                  ),
 
                   // Cart Items
                   Expanded(
@@ -181,10 +301,10 @@ class CartPage extends StatelessWidget {
                       itemBuilder: (context, index) {
                         final item = cartItems[index];
                         return Dismissible(
-                          key: Key(item['name']),
+                          key: Key(item['name'] ?? ''),
                           direction: DismissDirection.endToStart,
                           onDismissed: (_) {
-                            cartController.removeFromCart(item['name']);
+                            cartController.removeFromCart(item['name'] ?? '');
                           },
                           background: Container(
                             alignment: Alignment.centerRight,
@@ -206,13 +326,26 @@ class CartPage extends StatelessWidget {
                                   // Product Image
                                   ClipRRect(
                                     borderRadius: BorderRadius.circular(8),
-                                    child: Image.network(
-                                      item['image'],
-                                      width: 80,
-                                      height: 80,
-                                      fit: BoxFit.cover,
-                                    ),
+                                    child: item['image'] != null &&
+                                            item['image'].isNotEmpty
+                                        ? Image.asset(
+                                            item['image'],
+                                            width: 80,
+                                            height: 80,
+                                            fit: BoxFit.cover,
+                                          )
+                                        : Container(
+                                            width: 80,
+                                            height: 80,
+                                            color: Colors.grey.shade200,
+                                            child: const Icon(
+                                              Icons.image_not_supported,
+                                              size: 40,
+                                              color: Colors.grey,
+                                            ),
+                                          ),
                                   ),
+
                                   const SizedBox(width: 12),
 
                                   // Product Details
@@ -222,7 +355,7 @@ class CartPage extends StatelessWidget {
                                           CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          item['name'],
+                                          item['name'] ?? 'Unknown Product',
                                           maxLines: 2,
                                           overflow: TextOverflow.ellipsis,
                                           style: const TextStyle(
@@ -232,7 +365,7 @@ class CartPage extends StatelessWidget {
                                         ),
                                         const SizedBox(height: 4),
                                         Text(
-                                          '₹${item['price'].toStringAsFixed(2)}',
+                                          '₹${(item['price'] ?? 0).toStringAsFixed(2)}',
                                           style: const TextStyle(
                                             fontSize: 14,
                                             color: Colors.grey,
@@ -250,10 +383,10 @@ class CartPage extends StatelessWidget {
                                             color: Colors.red),
                                         onPressed: () =>
                                             cartController.updateQuantity(
-                                                item['name'],
-                                                item['quantity'] - 1),
+                                                item['name'] ?? '',
+                                                (item['quantity'] ?? 0) - 1),
                                       ),
-                                      Text('${item['quantity']}',
+                                      Text('${item['quantity'] ?? 0}',
                                           style: const TextStyle(
                                             fontWeight: FontWeight.bold,
                                             fontSize: 14,
@@ -294,74 +427,210 @@ class CartPage extends StatelessWidget {
                         ),
                       ],
                     ),
-                    child: Column(
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text('Subtotal',
-                                style: TextStyle(fontSize: 16)),
-                            Text('₹${subTotal.toStringAsFixed(2)}',
-                                style: const TextStyle(fontSize: 16)),
-                          ],
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: const BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.vertical(
+                          top: Radius.circular(16),
                         ),
-                        const SizedBox(height: 8),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text('Shipping Fee',
-                                style: TextStyle(fontSize: 16)),
-                            Text(
-                              shippingFee == 0
-                                  ? 'FREE'
-                                  : '₹${shippingFee.toStringAsFixed(2)}',
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: shippingFee == 0
-                                    ? Colors.green
-                                    : Colors.black,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const Divider(height: 24, thickness: 1),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text('Total',
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black12,
+                            blurRadius: 8,
+                            offset: Offset(0, -2),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text('Subtotal',
+                                  style: TextStyle(fontSize: 16)),
+                              Text('₹${subTotal.toStringAsFixed(2)}',
+                                  style: const TextStyle(fontSize: 16)),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text('Shipping Fee',
+                                  style: TextStyle(fontSize: 16)),
+                              Text(
+                                shippingFee == 0
+                                    ? 'FREE'
+                                    : '₹${shippingFee.toStringAsFixed(2)}',
                                 style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                )),
-                            Text('₹${total.toStringAsFixed(2)}',
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.green,
-                                )),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        ElevatedButton(
-                          onPressed: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Proceeding to Checkout...'),
+                                  fontSize: 16,
+                                  color: shippingFee == 0
+                                      ? Colors.green
+                                      : Colors.black,
+                                ),
                               ),
-                            );
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.orange,
+                            ],
                           ),
-                          child: const Text(
-                            'Checkout',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
+                          const Divider(height: 24, thickness: 1),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text('Total',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  )),
+                              Text('₹${total.toStringAsFixed(2)}',
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.green,
+                                  )),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+
+                          // SliderButton for Slide to Checkout
+                          SliderButton(
+                            action: () async {
+                              try {
+                                // Check if the address is null
+                                if (address == null) {
+                                  final snackBar = SnackBar(
+                                    content: AwesomeSnackbarContent(
+                                      title: 'Warning!',
+                                      message: 'Add adress to proceed',
+                                      contentType: ContentType.failure,
+                                    ),
+                                    behavior: SnackBarBehavior.floating,
+                                    backgroundColor: Colors.transparent,
+                                    elevation: 50,
+                                  );
+                                  ScaffoldMessenger.of(context)
+                                      .showSnackBar(snackBar);
+                                  return;
+                                }
+
+                                double totalInRupees =
+                                    total ?? 0.0; // Ensure `total` is not null
+
+                                if (totalInRupees <= 0) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Invalid payment amount.'),
+                                    ),
+                                  );
+                                  return;
+                                }
+
+                                // Step 1: Create Order
+                                final order = await createOrder(
+                                  (totalInRupees * 100)
+                                      .toInt(), // Convert to paise
+                                  'INR',
+                                  'receipt_${DateTime.now().millisecondsSinceEpoch}',
+                                );
+
+                                if (order == null ||
+                                    !order.containsKey('id') ||
+                                    !order.containsKey('amount')) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Failed to create order.'),
+                                    ),
+                                  );
+                                  return;
+                                }
+
+                                // Step 2: Open Razorpay Checkout
+                                RazorpayHelper.openCheckout(
+                                  apiKey: order['key_id'] ?? '',
+                                  amount: order['amount']?.toString() ??
+                                      "0", // Default to "0" if null
+                                  currency: order['currency'] ??
+                                      'INR', // Default to 'INR'
+                                  name: "Glowgenesis",
+                                  description: "Payment for Order",
+                                  orderId: order['id'] ??
+                                      '', // Default to empty string
+                                  onSuccess: (paymentId, signatureId) async {
+                                    print(
+                                        "Payment Successful. Payment ID: $paymentId");
+                                    bool isVerified = await verifyPayment(
+                                      order['id'] ?? '',
+                                      paymentId,
+                                      signatureId,
+                                    );
+                                    if (isVerified) {
+                                      // Payment successful and verified
+                                      final snackBar = SnackBar(
+                                        content: AwesomeSnackbarContent(
+                                          title: 'Success!',
+                                          message: 'Order Placed Successfully',
+                                          contentType: ContentType.success,
+                                        ),
+                                        behavior: SnackBarBehavior.floating,
+                                        backgroundColor: Colors.transparent,
+                                        elevation: 0,
+                                      );
+
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(snackBar);
+                                      cartController.clearCart();
+                                      Navigator.pushReplacementNamed(
+                                          context, '/home');
+                                    } else {
+                                      // Payment verification failed
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        const SnackBar(
+                                          content: Text(
+                                              'Payment verification failed!'),
+                                        ),
+                                      );
+                                    }
+                                  },
+                                  onFailure: (error) {
+                                    print("Payment Failed. Error: $error");
+                                  },
+                                );
+                              } catch (e) {
+                                // Handle general errors
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                      content: Text('Error: ${e.toString()}')),
+                                );
+                              }
+                            },
+                            label: !isPaymentInProgress
+                                ? Text(
+                                    'Slide to Pay',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  )
+                                : Text(
+                                    'Add  Address to pay',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                            icon: const Icon(
+                              Icons.payment,
+                              color: Colors.white,
                             ),
+                            buttonColor: Colors.orange,
+                            backgroundColor: Colors.grey.shade400,
+                            highlightedColor: Colors.green,
+                            disable: isPaymentInProgress,
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ],

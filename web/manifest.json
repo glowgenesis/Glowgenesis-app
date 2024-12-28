@@ -3,6 +3,11 @@
     "short_name": "glowgenesis",
     "start_url": ".",
     "display": "standalone",
+    "serviceworker": {
+    "src": "service-worker.js",
+    "scope": "/",
+    "type": "module"
+  },
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
     "description": "A new Flutter project.",

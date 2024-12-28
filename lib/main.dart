@@ -7,8 +7,6 @@ import 'package:glowgenesis/bottmnavbar.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
-
-import 'HomePage.dart';
 import 'Login/login.dart';
 import 'cart_page.dart';
 import 'CartProvider.dart';

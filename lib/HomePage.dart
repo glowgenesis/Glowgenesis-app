@@ -20,6 +20,7 @@ class _HomePageState extends State<HomePage> {
 
   final List<Map<String, dynamic>> products = [
     {
+      "id": "676ef6d2ea05f868a64aef43",
       "name": "Body Moisturizer",
       "category": "Deep Nourishment",
       "description":
@@ -30,6 +31,7 @@ class _HomePageState extends State<HomePage> {
       "image": "assets/images/moisturizer.png",
     },
     {
+      "id": "676ef697ea05f868a64aef41",
       "name": "Anti Acne Face Wash",
       "category": "Acne & Pimples",
       "description":
@@ -40,6 +42,7 @@ class _HomePageState extends State<HomePage> {
       "image": "assets/images/Anitacne.jpeg",
     },
     {
+      "id": "676ef6f7ddaae5af90acd4f1",
       "name": "Sunscreen Cream SPF 50",
       "category": "UV Protection",
       "description":
@@ -50,6 +53,7 @@ class _HomePageState extends State<HomePage> {
       "image": "assets/images/sunscreen.jpeg",
     },
     {
+      "id": "676ef6e9ea05f868a64aef47",
       "name": "Aloe Vera Gel - 200ml",
       "category": "Hydration & Soothing",
       "description":
@@ -60,6 +64,7 @@ class _HomePageState extends State<HomePage> {
       "image": "assets/images/aloeveragel.jpeg",
     },
     {
+      "id": "676ef6dfea05f868a64aef45",
       "name": "Vitamin C Face Wash",
       "category": "Brightening & Refreshing",
       "description":
@@ -158,6 +163,7 @@ class _HomePageState extends State<HomePage> {
                                 return SizedBox(
                                   width: calculatedWidth,
                                   child: ProductCard(
+                                    id: product["id"],
                                     name: product["name"],
                                     category: product["category"],
                                     description: product["description"],

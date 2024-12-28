@@ -46,7 +46,9 @@ class TrackOrderPage extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('Order Status', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                      const Text('Order Status',
+                          style: TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold)),
                       IconButton(
                         icon: const Icon(Icons.close, color: Colors.grey),
                         onPressed: () {
@@ -65,13 +67,15 @@ class TrackOrderPage extends StatelessWidget {
                           context,
                           status: 'Packing',
                           isCompleted: true,
-                          address: '2336 Jack Warren Rd, Delta Junction, Alaska 99737',
+                          address:
+                              '2336 Jack Warren Rd, Delta Junction, Alaska 99737',
                         ),
                         _buildStatusItem(
                           context,
                           status: 'Picked',
                           isCompleted: true,
-                          address: '2417 Tongass Ave #111, Ketchikan, Alaska 99901',
+                          address:
+                              '2417 Tongass Ave #111, Ketchikan, Alaska 99901',
                         ),
                         _buildStatusItem(
                           context,
@@ -96,15 +100,19 @@ class TrackOrderPage extends StatelessWidget {
                       CircleAvatar(
                         backgroundColor: Colors.grey[300],
                         radius: 30,
-                        child: Icon(Icons.person, color: Colors.grey[600], size: 40),
+                        child: Icon(Icons.person,
+                            color: Colors.grey[600], size: 40),
                       ),
                       const SizedBox(width: 16),
                       const Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('Jacob Jones', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                            Text('Delivery Guy', style: TextStyle(color: Colors.grey)),
+                            Text('Jacob Jones',
+                                style: TextStyle(
+                                    fontSize: 16, fontWeight: FontWeight.bold)),
+                            Text('Delivery Guy',
+                                style: TextStyle(color: Colors.grey)),
                           ],
                         ),
                       ),
@@ -126,7 +134,9 @@ class TrackOrderPage extends StatelessWidget {
   }
 
   Widget _buildStatusItem(BuildContext context,
-      {required String status, required bool isCompleted, required String address}) {
+      {required String status,
+      required bool isCompleted,
+      required String address}) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

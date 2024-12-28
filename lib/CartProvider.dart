@@ -46,4 +46,9 @@ class CartController extends ChangeNotifier {
   int getQuantity(String name) {
     return _cartItems[name]?['quantity'] ?? 0;
   }
+
+  void clearCart() {
+    _cartItems.clear();
+    notifyListeners();
+  }
 }
