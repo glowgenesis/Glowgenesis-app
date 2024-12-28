@@ -1,5 +1,9 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'trackorder.dart';
+import 'package:glowgenesis/api.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:intl/intl.dart';
 
 class MyOrdersPage extends StatefulWidget {
   const MyOrdersPage({super.key});
@@ -8,321 +12,217 @@ class MyOrdersPage extends StatefulWidget {
   _MyOrdersPageState createState() => _MyOrdersPageState();
 }
 
-class _MyOrdersPageState extends State<MyOrdersPage>
-    with SingleTickerProviderStateMixin {
-  late TabController _tabController;
+class _MyOrdersPageState extends State<MyOrdersPage> {
+  List<Order> _orders = [];
+  bool _isLoading = true;
+  String? _errorMessage;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _fetchOrders();
   }
 
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
+  Future<void> _fetchOrders() async {
+    final prefs = await SharedPreferences.getInstance();
+    final email = prefs.getString('email');
+
+    if (email == null) {
+      setState(() {
+        _errorMessage = 'No email found in preferences';
+        _isLoading = false;
+      });
+      return;
+    }
+
+    final url = Uri.parse('${Api.backendApi}/orders/$email');
+
+    try {
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = json.decode(response.body)['orders'];
+        setState(() {
+          _orders = data.map((order) => Order.fromJson(order)).toList();
+          _isLoading = false;
+        });
+      } else {
+        setState(() {
+          _errorMessage = 'Failed to fetch orders: ${response.statusCode}';
+          _isLoading = false;
+        });
+      }
+    } catch (error) {
+      setState(() {
+        _errorMessage = 'Error: $error';
+        _isLoading = false;
+      });
+    }
+  }
+
+  String _formatDate(DateTime date) {
+    return DateFormat('dd MMM yyyy, hh:mm a').format(date);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('My Orders', style: TextStyle(color: Colors.black)),
-        backgroundColor: Colors.white,
-        elevation: 1,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications, color: Colors.black),
-            onPressed: () {
-              // Handle notifications
-            },
-          ),
-        ],
-        bottom: TabBar(
-          controller: _tabController,
-          labelColor: Colors.black,
-          unselectedLabelColor: Colors.grey,
-          indicatorColor: Colors.black,
-          tabs: const [
-            Tab(text: 'Ongoing'),
-            Tab(text: 'Completed'),
-          ],
-        ),
+        title: const Text('My Orders'),
       ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          _buildOngoingOrders(),
-          _buildCompletedOrders(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildOngoingOrders() {
-    // Hardcoded data for ongoing orders
-    List<Map<String, String>> ongoingOrders = [
-      {
-        "title": "Anti Acne Face Wash",
-        "size": "M",
-        "price": "\$1,190",
-        "status": "In Transit"
-      },
-      {
-        "title": "Vitamin C Face Wash",
-        "size": "L",
-        "price": "\$1,100",
-        "status": "Picked"
-      },
-    ];
-
-    if (ongoingOrders.isEmpty) {
-      return _buildEmptyOrders('No Ongoing Orders!',
-          'You don’t have any ongoing orders at this time.');
-    }
-
-    return ListView.builder(
-      itemCount: ongoingOrders.length,
-      itemBuilder: (context, index) {
-        final order = ongoingOrders[index];
-        return Card(
-          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Row(
-              children: [
-                Container(
-                  width: 60,
-                  height: 60,
-                  color: Colors.grey[200],
-                  child: const Icon(Icons.image, size: 40, color: Colors.grey),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(order['title']!,
-                          style: const TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 16)),
-                      Text('Size ${order['size']!}',
-                          style: const TextStyle(color: Colors.grey)),
-                      Text(order['price']!,
-                          style: const TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 16)),
-                    ],
-                  ),
-                ),
-                Column(
-                  children: [
-                    Container(
-                      padding:
-                          const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: Colors.grey[200],
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(order['status']!,
-                          style: const TextStyle(fontSize: 12)),
-                    ),
-                    const SizedBox(height: 8),
-                    ElevatedButton(
-                      onPressed: () {
-                        // Handle track order
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => TrackOrderPage()),
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _errorMessage != null
+              ? Center(child: Text(_errorMessage!))
+              : Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: ListView.builder(
+                    itemCount: _orders.length,
+                    itemBuilder: (context, index) {
+                      final order = _orders[index];
+                      return Card(
+                        elevation: 4.0,
                         shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8)),
-                      ),
-                      child: const Text('Track Order'),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildCompletedOrders() {
-    // Mock data for completed orders
-    List<Map<String, dynamic>> completedOrders = [
-      {
-        "title": "Anti Acne Face Wash",
-        "size": "M",
-        "price": "\$1,190",
-        "rating": null
-      },
-      {
-        "title": "Vitamin C Face Wash",
-        "size": "L",
-        "price": "\$1,100",
-        "rating": 4.5
-      },
-    ];
-
-    if (completedOrders.isEmpty) {
-      return _buildEmptyOrders('No Completed Orders!',
-          'You don’t have any completed orders at this time.');
-    }
-
-    return ListView.builder(
-      itemCount: completedOrders.length,
-      itemBuilder: (context, index) {
-        final order = completedOrders[index];
-        return Card(
-          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Row(
-              children: [
-                Container(
-                  width: 60,
-                  height: 60,
-                  color: Colors.grey[200],
-                  child: const Icon(Icons.image, size: 40, color: Colors.grey),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(order['title'],
-                          style: const TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 16)),
-                      Text('Size ${order['size']}',
-                          style: const TextStyle(color: Colors.grey)),
-                      Text(order['price'],
-                          style: const TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 16)),
-                    ],
-                  ),
-                ),
-                order['rating'] == null
-                    ? ElevatedButton(
-                        onPressed: () {
-                          _showReviewDialog(context, order['title']);
-                        },
-                        style: ElevatedButton.styleFrom(
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8)),
+                          borderRadius: BorderRadius.circular(10),
                         ),
-                        child: const Text('Leave Review'),
-                      )
-                    : Row(
-                        children: [
-                          const Icon(Icons.star, color: Colors.amber, size: 16),
-                          const SizedBox(width: 4),
-                          Text('${order['rating']}/5',
-                              style: const TextStyle(color: Colors.grey)),
-                        ],
-                      ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildEmptyOrders(String title, String subtitle) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(Icons.inbox, size: 80, color: Colors.grey),
-          const SizedBox(height: 16),
-          Text(title,
-              style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black)),
-          const SizedBox(height: 8),
-          Text(subtitle, style: const TextStyle(fontSize: 14, color: Colors.grey)),
-        ],
-      ),
-    );
-  }
-
-  void _showReviewDialog(BuildContext context, String productTitle) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        int selectedRating = 0;
-        final TextEditingController reviewController = TextEditingController();
-
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return AlertDialog(
-              title: const Text('Leave a Review'),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text('How was your order?'),
-                  const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(5, (index) {
-                      return IconButton(
-                        onPressed: () {
-                          setState(() {
-                            selectedRating = index + 1;
-                          });
-                        },
-                        icon: Icon(
-                          Icons.star,
-                          color: index < selectedRating
-                              ? Colors.amber
-                              : Colors.grey,
+                        margin: const EdgeInsets.symmetric(vertical: 10),
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Order #${order.id}',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleLarge
+                                    ?.copyWith(fontWeight: FontWeight.bold),
+                              ),
+                              const SizedBox(height: 8.0),
+                              Text(
+                                'Order Date: ${_formatDate(order.createdAt)}',
+                                style: Theme.of(context).textTheme.bodyMedium,
+                              ),
+                              const SizedBox(height: 16.0),
+                              ...order.productId.map((product) => Padding(
+                                    padding: const EdgeInsets.only(bottom: 8.0),
+                                    child: Row(
+                                      children: [
+                                        Icon(
+                                          Icons.shopping_cart,
+                                          color: Theme.of(context).primaryColor,
+                                        ),
+                                        const SizedBox(width: 8.0),
+                                        Expanded(
+                                          child: Text(
+                                            product.name,
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .titleMedium
+                                                ?.copyWith(
+                                                    fontWeight:
+                                                        FontWeight.w600),
+                                          ),
+                                        ),
+                                        Text(
+                                          '₹${product.price}',
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .bodyLarge,
+                                        ),
+                                      ],
+                                    ),
+                                  )),
+                              const Divider(),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    'Total: ₹${order.billAmount}',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleLarge
+                                        ?.copyWith(
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.green,
+                                        ),
+                                  ),
+                                  // ElevatedButton(
+                                  //   onPressed: () {},
+                                  //   style: ElevatedButton.styleFrom(
+                                  //     padding: const EdgeInsets.symmetric(
+                                  //         horizontal: 16.0, vertical: 10.0),
+                                  //     backgroundColor: Colors.blue,
+                                  //     shape: RoundedRectangleBorder(
+                                  //       borderRadius:
+                                  //           BorderRadius.circular(8.0),
+                                  //     ),
+                                  //   ),
+                                  //   child: const Text('View Details'),
+                                  // ),
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
                       );
-                    }),
+                    },
                   ),
-                  const SizedBox(height: 16),
-                  TextField(
-                    controller: reviewController,
-                    decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
-                      hintText: 'Write your review...',
-                    ),
-                    maxLines: 3,
-                  ),
-                ],
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  child: const Text('Cancel'),
                 ),
-                ElevatedButton(
-                  onPressed: () {
-                    // Handle review submission
-                    print(
-                        'Review for $productTitle: Rating - $selectedRating, Review - ${reviewController.text}');
-                    Navigator.pop(context);
-                  },
-                  child: const Text('Submit'),
-                ),
-              ],
-            );
-          },
-        );
-      },
+    );
+  }
+}
+
+class Order {
+  final String id;
+  final List<Product> productId;
+  final double billAmount;
+  final String email;
+  final DateTime createdAt;
+
+  Order({
+    required this.id,
+    required this.productId,
+    required this.billAmount,
+    required this.email,
+    required this.createdAt,
+  });
+
+  factory Order.fromJson(Map<String, dynamic> json) {
+    var productsList = (json['productId'] as List)
+        .map((item) => Product.fromJson(item))
+        .toList();
+
+    return Order(
+      id: json['_id'],
+      productId: productsList,
+      billAmount: json['billAmount'].toDouble(),
+      email: json['email'],
+      createdAt: DateTime.parse(json['createdAt']),
+    );
+  }
+}
+
+class Product {
+  final String id;
+  final String name;
+  final double price;
+  final String shortDescription;
+
+  Product({
+    required this.id,
+    required this.name,
+    required this.price,
+    required this.shortDescription,
+  });
+
+  factory Product.fromJson(Map<String, dynamic> json) {
+    return Product(
+      id: json['_id'],
+      name: json['name'],
+      price: json['price'].toDouble(),
+      shortDescription: json['shortDescription'],
     );
   }
 }

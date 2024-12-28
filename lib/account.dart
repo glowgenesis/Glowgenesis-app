@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:glowgenesis/api.dart';
+import 'package:glowgenesis/bottmnavbar.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
@@ -23,6 +24,38 @@ class _AccountPageState extends State<AccountPage> {
   void initState() {
     super.initState();
     fetchUserDetails();
+    _isTokenValid(context);
+  }
+
+  Future<bool> _isTokenValid(BuildContext context) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final authToken = prefs.getString('authToken');
+
+      if (authToken == null) {
+        return false; // Token is missing
+      }
+
+      final response = await http.post(
+        Uri.parse(
+            '${Api.backendApi}/token-validate'), // Replace with your API URL
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $authToken',
+        },
+      );
+      print(response.body);
+
+      if (response.statusCode == 200) {
+        final responseData = json.decode(response.body);
+        return responseData['message'] ==
+            'Token validated'; // Updated condition
+      }
+    } catch (e) {
+      print('Error validating token: $e');
+    }
+
+    return false; // Default to invalid token
   }
 
   Future<void> fetchUserDetails() async {
@@ -79,21 +112,23 @@ class _AccountPageState extends State<AccountPage> {
               ? Center(child: Text(errorMessage!))
               : ListView(
                   children: [
-                    if (userDetails?['user']?['name'] != null)
+                    if (userDetails?['user']?['address']?['fullName'] != null)
                       ListTile(
                         leading: const Icon(Icons.person),
-                        title: Text('Name: ${userDetails?['user']?['name']}'),
+                        title: Text(
+                            'Name: ${userDetails?['user']?['address']?['fullName']}'),
                       ),
                     if (userDetails?['user']?['email'] != null)
                       ListTile(
                         leading: const Icon(Icons.email),
                         title: Text('Email: ${userDetails?['user']?['email']}'),
                       ),
-                    if (userDetails?['user']?['phoneNumber'] != null)
+                    if (userDetails?['user']?['address']?['phoneNumber'] !=
+                        null)
                       ListTile(
                         leading: const Icon(Icons.phone),
                         title: Text(
-                            'Phone: ${userDetails?['user']?['phoneNumber']}'),
+                            'Phone: ${userDetails?['user']?['address']?['phoneNumber']}'),
                       ),
                     _buildListTile(context,
                         icon: Icons.shopping_bag_outlined,
@@ -103,24 +138,24 @@ class _AccountPageState extends State<AccountPage> {
                         MaterialPageRoute(builder: (context) => MyOrdersPage()),
                       );
                     }),
-                    _buildListTile(context,
-                        icon: Icons.person_outline,
-                        title: 'My Details', onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => MyDetailsPage()),
-                      );
-                    }),
-                    _buildListTile(context,
-                        icon: Icons.home_outlined,
-                        title: 'Address Book', onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const AddressPage()),
-                      );
-                    }),
+                    // _buildListTile(context,
+                    //     icon: Icons.person_outline,
+                    //     title: 'My Details', onTap: () {
+                    //   Navigator.push(
+                    //     context,
+                    //     MaterialPageRoute(
+                    //         builder: (context) => MyDetailsPage()),
+                    //   );
+                    // }),
+                    // _buildListTile(context,
+                    //     icon: Icons.home_outlined,
+                    //     title: 'Address Book', onTap: () {
+                    //   Navigator.push(
+                    //     context,
+                    //     MaterialPageRoute(
+                    //         builder: (context) => const AddressPage()),
+                    //   );
+                    // }),
                     const Divider(height: 10, thickness: 1),
                     _buildListTile(context,
                         icon: Icons.help_outline, title: 'FAQs', onTap: () {}),
@@ -135,10 +170,21 @@ class _AccountPageState extends State<AccountPage> {
                         'Logout',
                         style: TextStyle(color: Colors.red),
                       ),
-                      onTap: () {
-                        // Handle logout
+                      onTap: () async {
+                        // Clear shared preferences
+                        final prefs = await SharedPreferences.getInstance();
+                        await prefs
+                            .clear(); // This clears all the data in SharedPreferences
+
+                        // Navigate to HomePage
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) =>
+                                  MainNavigation()), // Replace with your HomePage widget
+                        );
                       },
-                    ),
+                    )
                   ],
                 ),
     );

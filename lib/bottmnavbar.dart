@@ -164,6 +164,16 @@ class _MainNavigationState extends State<MainNavigation> {
       } else {
         Navigator.pushReplacementNamed(context, '/login');
       }
+    } else if (index == 2) {
+      // Account tab
+      bool isValidToken = await _isTokenValid(context);
+      if (isValidToken) {
+        setState(() {
+          _selectedIndex = index;
+        });
+      } else {
+        Navigator.pushReplacementNamed(context, '/login');
+      }
     } else {
       setState(() {
         _selectedIndex = index;

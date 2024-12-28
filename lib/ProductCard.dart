@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:glowgenesis/CartProvider.dart';
 import 'package:glowgenesis/Products/ProductDetailsPage.dart';
@@ -37,6 +39,24 @@ class _ProductCardState extends State<ProductCard> {
   void initState() {
     super.initState();
     _loadQuantity();
+    _loadCartFromPrefs();
+  }
+
+  Future<void> _loadCartFromPrefs() async {
+    final cartController = Provider.of<CartController>(context, listen: false);
+    await cartController.loadCartFromPreferences(); // Load cart into controller
+  }
+
+  Future<List<Map<String, dynamic>>> _loadCartData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? cartJson = prefs.getString('cart_items');
+    if (cartJson == null) {
+      return [];
+    } else {
+      // Convert the JSON string back into a list of maps
+      List<dynamic> cartList = jsonDecode(cartJson);
+      return cartList.map((e) => Map<String, dynamic>.from(e)).toList();
+    }
   }
 
   Future<void> _loadQuantity() async {
@@ -58,6 +78,7 @@ class _ProductCardState extends State<ProductCard> {
     _saveQuantity(quantity);
 
     final cartController = Provider.of<CartController>(context, listen: false);
+    // Add the item to the cart controller
     cartController.addToCart({
       'name': widget.name,
       'category': widget.category,

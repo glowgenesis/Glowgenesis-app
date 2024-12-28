@@ -160,63 +160,64 @@ class _AddDeliveryAddressPageState extends State<AddDeliveryAddressPage> {
     }
   }
 
-  void saveAddress() async {
-    final prefs = await SharedPreferences.getInstance();
-    final email = prefs.getString('email');
+void saveAddress() async {
+  final prefs = await SharedPreferences.getInstance();
+  final email = prefs.getString('email');
 
-    if (_formKey.currentState!.validate()) {
-      final url = Uri.parse(
-          '${Api.backendApi}/user/update'); // Replace with your live URL if deployed
+  if (_formKey.currentState!.validate()) {
+    final url = Uri.parse(
+        '${Api.backendApi}/user/update'); // Replace with your live URL if deployed
 
-      final addressData = {
-        "email":
-            email, // Use the email stored in preferences (optional if you want to send it)
-        "address": {
-          "fullName": fullNameController.text,
-          "pincode": pincodeController.text,
-          "phoneNumber": phoneNumberController.text,
-          "state": stateController.text,
-          "city": cityController.text,
-          "houseNo": houseNoController.text,
-          "roadName": roadNameController.text,
-          "landmark": landmarkController.text,
-          "addressType":
-              addressType, // Ensure you have this variable defined elsewhere
-          "roadDetails": roadNameController.text, // Adding roadDetails
-          "houseDetails": houseNoController.text, // Adding houseDetails
-        },
-      };
+    final addressData = {
+      "email": email, // Use the email stored in preferences (optional if you want to send it)
+      "address": {
+        "fullName": fullNameController.text,
+        "pincode": pincodeController.text,
+        "phoneNumber": phoneNumberController.text,
+        "state": stateController.text,
+        "city": cityController.text,
+        "houseNo": houseNoController.text,
+        "roadName": roadNameController.text,
+        "landmark": landmarkController.text,
+        "addressType": addressType, // Ensure you have this variable defined elsewhere
+        "roadDetails": roadNameController.text, // Adding roadDetails
+        "houseDetails": houseNoController.text, // Adding houseDetails
+      },
+    };
 
-      try {
-        final response = await http.put(
-          url,
-          headers: {"Content-Type": "application/json"},
-          body: json.encode(addressData),
-        );
+    try {
+      final response = await http.put(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: json.encode(addressData),
+      );
 
-        if (response.statusCode == 200) {
-          final responseBody = json.decode(response.body);
+      if (response.statusCode == 200) {
+        final responseBody = json.decode(response.body);
 
-          if (responseBody['success']) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(responseBody['message'])),
-            );
-          } else {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(responseBody['message'])),
-            );
-          }
+        if (responseBody['success']) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(responseBody['message'])),
+          );
+
+          // Send a result back to the previous page to trigger a refresh
+          Navigator.pop(context, true); // Passing 'true' as result to indicate success
         } else {
-          throw Exception(
-              "Failed to save address. HTTP Status: ${response.statusCode}");
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(responseBody['message'])),
+          );
         }
-      } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
-        );
+      } else {
+        throw Exception(
+            "Failed to save address. HTTP Status: ${response.statusCode}");
       }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
     }
   }
+}
 
   @override
   Widget build(BuildContext context) {

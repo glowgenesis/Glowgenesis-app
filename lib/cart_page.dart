@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
+import 'package:glowgenesis/address/address.dart';
 import 'package:glowgenesis/api.dart';
 import 'package:glowgenesis/razorpay_web.dart';
 import 'package:http/http.dart' as http;
@@ -26,6 +27,12 @@ class _CartPageState extends State<CartPage> {
   void initState() {
     super.initState();
     fetchUserAddress();
+    _loadCartFromPrefs();
+  }
+
+  Future<void> _loadCartFromPrefs() async {
+    final cartController = Provider.of<CartController>(context, listen: false);
+    await cartController.loadCartFromPreferences(); // Load cart into controller
   }
 
   void setPaymentProgressIfAddressIsNull() {
@@ -36,6 +43,44 @@ class _CartPageState extends State<CartPage> {
         isPaymentInProgress = false;
       }
     });
+  }
+
+  Future<void> placeOrder(
+      {required List<String> productIds, required double billAmount}) async {
+    final prefs = await SharedPreferences.getInstance();
+    final email = prefs.getString('email');
+    final url = Uri.parse(
+        '${Api.backendApi}/order'); // Replace with your actual API URL
+
+    try {
+      // Create the body for the POST request
+      final body = json.encode({
+        'productId': productIds,
+        'billAmount': billAmount,
+        'email': email,
+      });
+
+      // Set the headers for the request
+      final headers = {
+        'Content-Type': 'application/json',
+      };
+
+      // Make the POST request
+      final response = await http.post(url, body: body, headers: headers);
+
+      if (response.statusCode == 201) {
+        // Order placed successfully
+        print('Order placed successfully!');
+        final responseData = json.decode(response.body);
+        print('Order Data: ${responseData['order']}');
+      } else {
+        // Something went wrong
+        print('Failed to place order. Status code: ${response.statusCode}');
+        print('Error: ${response.body}');
+      }
+    } catch (error) {
+      print('Error placing order: $error');
+    }
   }
 
   Future<Map<String, dynamic>> fetchUserAddress() async {
@@ -127,6 +172,14 @@ class _CartPageState extends State<CartPage> {
     }
   }
 
+  void _refreshAddressList() {
+    // Call the API to get updated address list or refresh local data
+    setState(() {
+      // Update state here to refresh the page, e.g., loading new addresses
+      fetchUserAddress();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final cartController = Provider.of<CartController>(context);
@@ -152,6 +205,15 @@ class _CartPageState extends State<CartPage> {
               fontSize: 18,
               fontWeight: FontWeight.bold,
             ),
+          ),
+          leading: IconButton(
+            icon: const Icon(
+              Icons.arrow_back_ios, // iOS-style back button
+              color: Colors.black,
+            ),
+            onPressed: () {
+              Navigator.pushNamed(context, '/home');
+            },
           ),
         ),
         body: cartItems.isEmpty
@@ -247,7 +309,7 @@ class _CartPageState extends State<CartPage> {
                               ),
                               const SizedBox(height: 8),
                               Text(
-                                '${address!['fullName']}\n${address!['houseDetails']}, ${address!['roadDetails']}, ${address!['landmark']}, ${address!['city']}, ${address!['state']} - ${address!['pincode']}',
+                                "${address!['fullName']}\n${address!['houseDetails']}, ${address!['roadDetails']}, ${address!['landmark']}, ${address!['city']}, ${address!['state']} - ${address!['pincode']}\n${address!['phoneNumber']}",
                                 style: const TextStyle(
                                   fontSize: 14,
                                   color: Colors.black87,
@@ -258,8 +320,18 @@ class _CartPageState extends State<CartPage> {
                                 child: TextButton(
                                   onPressed: () {
                                     // Navigate to edit address screen
-                                    Navigator.pushNamed(
-                                        context, '/add-address');
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) =>
+                                              AddDeliveryAddressPage()),
+                                    ).then((refresh) {
+                                      if (refresh != null && refresh == true) {
+                                        // Trigger refresh or re-initialization of the previous page
+                                        // For example, you might want to refresh the list of addresses
+                                        _refreshAddressList(); // A method that you can create to refresh the page
+                                      }
+                                    });
                                   },
                                   child: const Text(
                                     'Change',
@@ -574,10 +646,32 @@ class _CartPageState extends State<CartPage> {
                                         backgroundColor: Colors.transparent,
                                         elevation: 0,
                                       );
+                                      final productIds = List<String>.from(
+                                        cartItems.map((item) =>
+                                            item['productId'] as String),
+                                      );
+
+                                      final dborder = placeOrder(
+                                          productIds:
+                                              productIds, // List<String> of productIds
+                                          billAmount:
+                                              totalInRupees // billAmount as a double (no need to cast to List<String>)
+                                          );
+                                      if (dborder == null) {
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          const SnackBar(
+                                            content:
+                                                Text('Failed to create order.'),
+                                          ),
+                                        );
+                                        return;
+                                      }
 
                                       ScaffoldMessenger.of(context)
                                           .showSnackBar(snackBar);
                                       cartController.clearCart();
+                                      cartController.clearCartFromPreferences();
                                       Navigator.pushReplacementNamed(
                                           context, '/home');
                                     } else {
