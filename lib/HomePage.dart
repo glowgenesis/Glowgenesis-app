@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:glowgenesis/BottomCartStrip.dart';
 import 'package:glowgenesis/ProductCard.dart';
+import 'package:carousel_slider/carousel_slider.dart';
 
 class CartNotifier {
   static final ValueNotifier<int> cartCount = ValueNotifier<int>(0);
@@ -19,6 +20,8 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   // cartCount defined inside HomePage as a static ValueNotifier
   static ValueNotifier<int> cartCount = ValueNotifier<int>(0);
+  bool _isSearching = false;
+  final TextEditingController _searchController = TextEditingController();
 
   final List<Map<String, dynamic>> products = [
     {
@@ -27,8 +30,8 @@ class _HomePageState extends State<HomePage> {
       "category": "Deep Nourishment",
       "description":
           "Intensely moisturizes | Smoothens rough skin | Long-lasting hydration",
-      "rating": 4.85,
-      "reviews": 268,
+      "rating": 0,
+      "reviews": 0,
       "price": 289,
       "image": "assets/images/moisturizer.png",
     },
@@ -38,8 +41,8 @@ class _HomePageState extends State<HomePage> {
       "category": "Acne & Pimples",
       "description":
           "Clears acne & pimples | Deeply cleanses | Unclogs pores effectively",
-      "rating": 4.75,
-      "reviews": 415,
+      "rating": 0,
+      "reviews": 0,
       "price": 195,
       "image": "assets/images/Anitacne.jpeg",
     },
@@ -49,8 +52,8 @@ class _HomePageState extends State<HomePage> {
       "category": "UV Protection",
       "description":
           "Protects from harmful UV rays | Lightweight & Non-Greasy | Hydrates Skin",
-      "rating": 4.9,
-      "reviews": 512,
+      "rating": 0,
+      "reviews": 0,
       "price": 0,
       "image": "assets/images/sunscreen.jpeg",
     },
@@ -60,8 +63,8 @@ class _HomePageState extends State<HomePage> {
       "category": "Hydration & Soothing",
       "description":
           "Soothes skin irritation | Hydrates & Nourishes | Multipurpose Gel",
-      "rating": 4.8,
-      "reviews": 420,
+      "rating": 0,
+      "reviews": 0,
       "price": 0,
       "image": "assets/images/aloeveragel.jpeg",
     },
@@ -71,17 +74,30 @@ class _HomePageState extends State<HomePage> {
       "category": "Brightening & Refreshing",
       "description":
           "Boosts skin radiance | Gently exfoliates | Removes impurities",
-      "rating": 4.7,
-      "reviews": 375,
+      "rating": 0,
+      "reviews": 0,
       "price": 0,
       "image": "assets/images/vitaminc.jpeg",
     },
   ];
 
+  List<Map<String, dynamic>> filteredProducts = [];
+
   @override
   void initState() {
     super.initState();
     _loadCartCount();
+    filteredProducts = products; // Initialize filtered products
+    _searchController.addListener(_filterProducts);
+  }
+
+  void _filterProducts() {
+    String query = _searchController.text.toLowerCase();
+    setState(() {
+      filteredProducts = products
+          .where((product) => product["name"].toLowerCase().contains(query))
+          .toList();
+    });
   }
 
   Future<void> _loadCartCount() async {
@@ -105,11 +121,61 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        automaticallyImplyLeading: false, // This removes the back button
-        title: Image.asset('assets/logo.png', height: 30),
-        actions: const [
-          Icon(Icons.menu, color: Colors.black),
-          SizedBox(width: 14),
+        automaticallyImplyLeading: false,
+        title: Row(
+          children: [
+            SizedBox(
+              height: 50, // Specify the desired height for the logo
+              width:
+                  50, // Optional: Specify width to control the logo size further
+              child: Image.asset(
+                'assets/Glowgenesislogo.png',
+                fit: BoxFit
+                    .contain, // Adjusts the image to fit within the box while maintaining aspect ratio
+              ),
+            ),
+            if (_isSearching)
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  child: TextField(
+                    controller: _searchController,
+                    autofocus: true,
+                    decoration: InputDecoration(
+                      hintText: 'Search...',
+                      hintStyle: TextStyle(color: Colors.grey[600]),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(30),
+                        borderSide: BorderSide.none,
+                      ),
+                      filled: true,
+                      fillColor: Colors.grey[200],
+                      contentPadding:
+                          const EdgeInsets.symmetric(horizontal: 16),
+                    ),
+                    style: const TextStyle(color: Colors.black),
+                  ),
+                ),
+              ),
+          ],
+        ),
+        actions: [
+          IconButton(
+            icon: Icon(
+              _isSearching ? Icons.close : Icons.search,
+              color: Colors.black,
+            ),
+            onPressed: () {
+              setState(() {
+                _isSearching = !_isSearching;
+                if (!_isSearching) {
+                  _searchController.clear();
+                  filteredProducts = products; // Reset the filter
+                }
+              });
+            },
+          ),
+          const SizedBox(width: 14),
         ],
       ),
       body: Stack(
@@ -117,7 +183,6 @@ class _HomePageState extends State<HomePage> {
           ValueListenableBuilder<int>(
             valueListenable: cartCount,
             builder: (context, count, child) {
-              // Calculate bottom padding dynamically based on BottomCartStrip visibility
               double bottomPadding = count > 0 ? 50 : 0;
 
               return SingleChildScrollView(
@@ -127,21 +192,58 @@ class _HomePageState extends State<HomePage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // Search Bar
+                      // Padding(
+                      //   padding: const EdgeInsets.all(10.0),
+                      //   child: TextField(
+                      //     decoration: InputDecoration(
+                      //       hintText: 'Search',
+                      //       prefixIcon: const Icon(Icons.search),
+                      //       border: OutlineInputBorder(
+                      //         borderRadius: BorderRadius.circular(30),
+                      //       ),
+                      //       filled: true,
+                      //       fillColor: Colors.grey[200],
+                      //     ),
+                      //   ),
+                      // ),
+                      // Auto-Sliding Banners
                       Padding(
-                        padding: const EdgeInsets.all(10.0),
-                        child: TextField(
-                          decoration: InputDecoration(
-                            hintText: 'Search',
-                            prefixIcon: const Icon(Icons.search),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(30),
-                            ),
-                            filled: true,
-                            fillColor: Colors.grey[200],
+                        padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                        child: CarouselSlider(
+                          options: CarouselOptions(
+                            height: 200,
+                            autoPlay: true,
+                            autoPlayInterval: const Duration(seconds: 3),
+                            autoPlayAnimationDuration:
+                                const Duration(milliseconds: 800),
+                            enlargeCenterPage: true,
+                            viewportFraction: 1.0,
+                            aspectRatio: 16 / 9,
                           ),
+                          items: [
+                            'assets/Offers/sale50-2.jpg',
+                            'assets/Offers/sale50-3.jpg', // Add more images as needed
+                            'assets/Offers/sale50-1.jpg',
+                          ].map((imagePath) {
+                            return Builder(
+                              builder: (BuildContext context) {
+                                return Container(
+                                  margin: const EdgeInsets.symmetric(
+                                      horizontal: 5.0),
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(12),
+                                    image: DecorationImage(
+                                      image: AssetImage(imagePath),
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
+                                );
+                              },
+                            );
+                          }).toList(),
                         ),
                       ),
-                      // Banner
+                      // Products Grid
                       Padding(
                         padding: const EdgeInsets.all(10.0),
                         child: LayoutBuilder(
@@ -150,7 +252,6 @@ class _HomePageState extends State<HomePage> {
                             int itemsPerRow =
                                 (constraints.maxWidth / itemWidth).floor();
 
-                            // Ensure at least one item per row
                             itemsPerRow = itemsPerRow > 0 ? itemsPerRow : 1;
 
                             double calculatedWidth = (constraints.maxWidth -
@@ -161,7 +262,7 @@ class _HomePageState extends State<HomePage> {
                               spacing: 10,
                               runSpacing: 10,
                               alignment: WrapAlignment.start,
-                              children: products.map((product) {
+                              children: filteredProducts.map((product) {
                                 return SizedBox(
                                   width: calculatedWidth,
                                   child: ProductCard(

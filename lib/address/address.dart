@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:elegant_notification/elegant_notification.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:glowgenesis/api.dart';
@@ -27,12 +28,10 @@ class _AddDeliveryAddressPageState extends State<AddDeliveryAddressPage> {
     try {
       // Check if location services are enabled
       if (!await Geolocator.isLocationServiceEnabled()) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content:
-                Text('Location services are disabled. Please enable them.'),
-          ),
-        );
+        ElegantNotification.error(
+          title: Text('Warning!'),
+          description: Text('Turn on you location'),
+        ).show(context);
         return;
       }
 
@@ -40,9 +39,10 @@ class _AddDeliveryAddressPageState extends State<AddDeliveryAddressPage> {
       LocationPermission permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied ||
           permission == LocationPermission.deniedForever) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Location permissions are denied.')),
-        );
+        ElegantNotification.error(
+          title: Text('Warning!'),
+          description: Text('Location permissions are denied.'),
+        ).show(context);
         return;
       }
 
@@ -92,24 +92,15 @@ class _AddDeliveryAddressPageState extends State<AddDeliveryAddressPage> {
           }
 
           // Set full address (optional)
-          fullAddress = data['results'][0]['formatted_address'];
-          if (fullAddress != null) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Address: $fullAddress')),
-            );
-          }
         } else {
-          throw Exception("No results found for the current location.");
+          // throw Exception("No results found for the current location.");
+          print("No results found");
         }
       } else {
         throw Exception(
             "Failed to fetch address. HTTP Status: ${response.statusCode}");
       }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error fetching location: $e')),
-      );
-    }
+    } catch (e) {}
   }
 
   Future<void> fetchCityStateFromPincode(String pincode) async {
@@ -154,70 +145,71 @@ class _AddDeliveryAddressPageState extends State<AddDeliveryAddressPage> {
             "Failed to fetch data. HTTP Status: ${response.statusCode}");
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error fetching city/state: $e')),
-      );
+      ElegantNotification.error(
+        title: Text('Error!'),
+        description: Text('Enter Valid Pincode.'),
+      ).show(context);
     }
   }
 
-void saveAddress() async {
-  final prefs = await SharedPreferences.getInstance();
-  final email = prefs.getString('email');
+  void saveAddress() async {
+    final prefs = await SharedPreferences.getInstance();
+    final email = prefs.getString('email');
 
-  if (_formKey.currentState!.validate()) {
-    final url = Uri.parse(
-        '${Api.backendApi}/user/update'); // Replace with your live URL if deployed
+    if (_formKey.currentState!.validate()) {
+      final url = Uri.parse(
+          '${Api.backendApi}/user/update'); // Replace with your live URL if deployed
 
-    final addressData = {
-      "email": email, // Use the email stored in preferences (optional if you want to send it)
-      "address": {
-        "fullName": fullNameController.text,
-        "pincode": pincodeController.text,
-        "phoneNumber": phoneNumberController.text,
-        "state": stateController.text,
-        "city": cityController.text,
-        "houseNo": houseNoController.text,
-        "roadName": roadNameController.text,
-        "landmark": landmarkController.text,
-        "addressType": addressType, // Ensure you have this variable defined elsewhere
-        "roadDetails": roadNameController.text, // Adding roadDetails
-        "houseDetails": houseNoController.text, // Adding houseDetails
-      },
-    };
+      final addressData = {
+        "email":
+            email, // Use the email stored in preferences (optional if you want to send it)
+        "address": {
+          "fullName": fullNameController.text,
+          "pincode": pincodeController.text,
+          "phoneNumber": phoneNumberController.text,
+          "state": stateController.text,
+          "city": cityController.text,
+          "houseNo": houseNoController.text,
+          "roadName": roadNameController.text,
+          "landmark": landmarkController.text,
+          "addressType":
+              addressType, // Ensure you have this variable defined elsewhere
+          "roadDetails": roadNameController.text, // Adding roadDetails
+          "houseDetails": houseNoController.text, // Adding houseDetails
+        },
+      };
 
-    try {
-      final response = await http.put(
-        url,
-        headers: {"Content-Type": "application/json"},
-        body: json.encode(addressData),
-      );
+      try {
+        final response = await http.put(
+          url,
+          headers: {"Content-Type": "application/json"},
+          body: json.encode(addressData),
+        );
 
-      if (response.statusCode == 200) {
-        final responseBody = json.decode(response.body);
+        if (response.statusCode == 200) {
+          final responseBody = json.decode(response.body);
 
-        if (responseBody['success']) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(responseBody['message'])),
-          );
-
-          // Send a result back to the previous page to trigger a refresh
-          Navigator.pop(context, true); // Passing 'true' as result to indicate success
+          if (responseBody['success']) {
+            // Send a result back to the previous page to trigger a refresh
+            ElegantNotification.success(
+              title: Text('Success!'),
+              description: Text('Address added successfully.'),
+            ).show(context);
+            Navigator.pop(
+                context, true); // Passing 'true' as result to indicate success
+          } else {}
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(responseBody['message'])),
-          );
+          throw Exception(
+              "Failed to save address. HTTP Status: ${response.statusCode}");
         }
-      } else {
-        throw Exception(
-            "Failed to save address. HTTP Status: ${response.statusCode}");
+      } catch (e) {
+        ElegantNotification.error(
+          title: Text('Error!'),
+          description: Text('Failed to add Address.'),
+        ).show(context);
       }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e')),
-      );
     }
   }
-}
 
   @override
   Widget build(BuildContext context) {

@@ -44,6 +44,8 @@ dependencies:
   razorpay_flutter: ^1.3.7
   flutter_js: ^0.8.1
   ffi: ^2.1.3
+  slide_to_act: ^2.0.2
+  carousel_slider: ^5.0.0
 
 dev_dependencies:
   flutter_test:
@@ -71,6 +73,10 @@ flutter:
     - assets/
     - assets/Offers/offers.jpg
     - assets/images/
+    - assets/Offers/sale50-1.jpg
+    - assets/Offers/sale50-2.jpg
+    - assets/Offers/sale50-3.jpg
+    - assets/Glowgenesislogo.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

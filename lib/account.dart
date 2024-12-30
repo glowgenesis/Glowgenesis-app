@@ -1,3 +1,4 @@
+import 'package:elegant_notification/elegant_notification.dart';
 import 'package:flutter/material.dart';
 import 'package:glowgenesis/api.dart';
 import 'package:glowgenesis/bottmnavbar.dart';
@@ -183,6 +184,10 @@ class _AccountPageState extends State<AccountPage> {
                               builder: (context) =>
                                   MainNavigation()), // Replace with your HomePage widget
                         );
+                        ElegantNotification.success(
+                          // title: Text('Error!'),
+                          description: Text('Successfully Logged out'),
+                        ).show(context);
                       },
                     )
                   ],

@@ -1,3 +1,4 @@
+import 'package:elegant_notification/elegant_notification.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:glowgenesis/api.dart';
@@ -43,61 +44,29 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
           await prefs.setString('authToken', token);
           await prefs.setString('email', widget.email);
 
-          final snackBar = SnackBar(
-            content: AwesomeSnackbarContent(
-              title: 'Success!',
-              message: 'OTP Verified Successfully',
-              contentType: ContentType.success,
-            ),
-            behavior: SnackBarBehavior.floating,
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-          );
-
-          ScaffoldMessenger.of(context).showSnackBar(snackBar);
+          ElegantNotification.success(
+            // title: Text('Success!'),
+            description: Text('OTP Verified Successfully'),
+          ).show(context);
           Navigator.pushReplacementNamed(context, '/home');
         } else {
-          final snackBar = SnackBar(
-            content: AwesomeSnackbarContent(
-              title: 'Error!',
-              message: 'Invalid or expired OTP',
-              contentType: ContentType.failure,
-            ),
-            behavior: SnackBarBehavior.floating,
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-          );
-
-          ScaffoldMessenger.of(context).showSnackBar(snackBar);
+          ElegantNotification.error(
+            title: Text('error!'),
+            description: Text('OTP verification Failed!'),
+          ).show(context);
         }
       } catch (e) {
-        final snackBar = SnackBar(
-          content: AwesomeSnackbarContent(
-            title: 'Error!',
-            message: 'Error verifying OTP',
-            contentType: ContentType.failure,
-          ),
-          behavior: SnackBarBehavior.floating,
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-        );
-
-        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+        ElegantNotification.error(
+          title: Text('error!'),
+          description: Text('OTP verification Failed!'),
+        ).show(context);
         print("Error verifying OTP: $e");
       }
     } else {
-      final snackBar = SnackBar(
-        content: AwesomeSnackbarContent(
-          title: 'Warning!',
-          message: 'Please enter a valid OTP',
-          contentType: ContentType.warning,
-        ),
-        behavior: SnackBarBehavior.floating,
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-      );
-
-      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      ElegantNotification.error(
+        title: Text('Warning!'),
+        description: Text('Please Enter a valid OTP!'),
+      ).show(context);
     }
   }
 

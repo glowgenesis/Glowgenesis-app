@@ -1,3 +1,4 @@
+import 'package:elegant_notification/elegant_notification.dart';
 import 'package:flutter/material.dart';
 
 class AddressPage extends StatefulWidget {
@@ -213,7 +214,8 @@ class _NewAddressPageState extends State<NewAddressPage> {
                             context: context,
                             builder: (context) => AlertDialog(
                               title: const Text('Address Saved'),
-                              content: const Text('Your address has been saved.'),
+                              content:
+                                  const Text('Your address has been saved.'),
                               actions: [
                                 TextButton(
                                   onPressed: () {
@@ -226,11 +228,10 @@ class _NewAddressPageState extends State<NewAddressPage> {
                             ),
                           );
                         } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Please fill all the fields'),
-                            ),
-                          );
+                          ElegantNotification.error(
+                            title: Text('Warning!'),
+                            description: Text('Please fill all the fields!'),
+                          ).show(context);
                         }
                       },
                       style: ElevatedButton.styleFrom(
